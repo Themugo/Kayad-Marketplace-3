@@ -28,13 +28,30 @@ export const GalleryPage: React.FC = () => {
     return vehicles.filter(vehicle => {
       // Search Query
       if (filters.searchQuery) {
-        const q = filters.searchQuery.toLowerCase();
+        const q = filters.searchQuery.toLowerCase().trim();
         const matchesTitle = vehicle.title?.toLowerCase().includes(q);
         const matchesMake = vehicle.make?.toLowerCase().includes(q);
         const matchesModel = vehicle.model?.toLowerCase().includes(q);
         const matchesVin = vehicle.vin?.toLowerCase().includes(q);
         const matchesLocation = vehicle.location?.toLowerCase().includes(q);
-        if (!matchesTitle && !matchesMake && !matchesModel && !matchesVin && !matchesLocation) {
+        const matchesSeller = vehicle.sellerName?.toLowerCase().includes(q);
+        const matchesBody = vehicle.bodyStyle?.toLowerCase().includes(q);
+        const matchesEngine = vehicle.engine?.toLowerCase().includes(q);
+        const matchesFuel = vehicle.fuelType?.toLowerCase().includes(q);
+        const matchesTrans = vehicle.transmission?.toLowerCase().includes(q);
+
+        if (
+          !matchesTitle &&
+          !matchesMake &&
+          !matchesModel &&
+          !matchesVin &&
+          !matchesLocation &&
+          !matchesSeller &&
+          !matchesBody &&
+          !matchesEngine &&
+          !matchesFuel &&
+          !matchesTrans
+        ) {
           return false;
         }
       }
@@ -188,33 +205,33 @@ export const GalleryPage: React.FC = () => {
         )}
 
         {/* Showroom Vehicle Grid */}
-        <div className="flex-1 min-w-0 space-y-4">
+        <div className="flex-1 min-w-0 space-y-5">
           
           {/* Results Count Header */}
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              <span className="text-sm sm:text-base font-serif font-black text-[#1E3063]">
-                {filteredVehicles.length} vehicles available
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1 pb-2 border-b border-[#E2D8C7]/70">
+            <div className="flex items-center gap-3">
+              <span className="text-base sm:text-lg font-serif font-black text-[#1E3063]">
+                {filteredVehicles.length} {filteredVehicles.length === 1 ? 'vehicle' : 'vehicles'} available
               </span>
               {activeFiltersCount > 0 && (
                 <button
                   onClick={resetFilters}
-                  className="text-xs font-bold text-[#00C9CE] hover:underline flex items-center gap-1"
+                  className="text-xs font-bold text-[#00C9CE] hover:underline flex items-center gap-1 transition-colors cursor-pointer"
                 >
                   Clear filters ({activeFiltersCount})
                 </button>
               )}
             </div>
 
-            <div className="hidden sm:flex items-center gap-3 text-xs text-slate-500 font-bold">
-              <span className="flex items-center gap-1 text-[#1E3063]">
-                <ShieldCheck className="w-4 h-4 text-[#00C9CE]" />
+            <div className="flex items-center gap-2 text-xs text-[#6B7A99] font-bold">
+              <span className="flex items-center gap-1.5 text-[#1E3063] bg-white px-3 py-1 rounded-full border border-[#E2D8C7] shadow-2xs">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#00C9CE]" />
                 100% Escrow Protected
               </span>
             </div>
           </div>
 
-          {/* 4-Column Grid Layout */}
+          {/* Grid Layout */}
           {filteredVehicles.length === 0 ? (
             <div className="p-12 text-center bg-white border border-[#E2D8C7] rounded-3xl space-y-4 shadow-sm my-6">
               <div className="w-16 h-16 mx-auto rounded-full bg-[#1E3063]/10 flex items-center justify-center text-[#1E3063]">
@@ -237,7 +254,7 @@ export const GalleryPage: React.FC = () => {
             <div
               className={
                 viewMode === 'grid'
-                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 items-stretch'
+                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-7 items-stretch'
                   : 'space-y-4'
               }
             >

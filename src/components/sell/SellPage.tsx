@@ -9,23 +9,26 @@ import {
   Building2, 
   CheckCircle2, 
   Sparkles, 
-  Upload, 
   Phone, 
   Mail, 
   MapPin, 
   Car,
-  DollarSign,
-  Info
+  Lock,
+  Search,
+  Globe2,
+  FileCheck2,
+  Award
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { useAuth } from '../../context/AuthContext';
+import { UserRole } from '../../types';
 import { Button } from '../ui/Button';
 
 type AccountType = 'private' | 'dealer';
 
 export const SellPage: React.FC = () => {
   const { navigateTo } = useMarketplace();
-  const { openAuthModal } = useAuth();
+  const { openAuthModal, login } = useAuth();
 
   // Step state: 1 = Choose Account Type, 2 = Your Details
   const [currentStep, setCurrentStep] = useState<number>(1);
@@ -60,32 +63,73 @@ export const SellPage: React.FC = () => {
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSuccess(true);
+
+      // Auto login user with the onboarded role (seller or dealer)
+      const targetRole: UserRole = selectedType === 'dealer' ? 'dealer' : 'seller';
+      const userEmail = formData.email.trim() || `seller_${Date.now()}@kayad.co.ke`;
+      login(userEmail, targetRole);
+
       setTimeout(() => {
         navigateTo('dashboard');
-      }, 2000);
-    }, 1200);
+      }, 1800);
+    }, 1000);
   };
 
   return (
     <div className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-10 bg-[#FCF9F4] text-[#1E3063] font-sans">
       
       {/* 1. Top Hero Section */}
-      <div className="p-6 sm:p-10 rounded-3xl bg-[#1E3063] text-white border border-white/10 shadow-xl relative overflow-hidden text-center space-y-3">
+      <div className="p-6 sm:p-9 rounded-3xl bg-[#1E3063] text-white border border-white/20 shadow-xl relative overflow-hidden text-center space-y-4">
         <div className="absolute top-0 right-1/2 translate-x-1/2 w-96 h-96 bg-[#00C9CE]/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 space-y-3 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00C9CE]/20 text-[#00C9CE] text-xs font-extrabold uppercase tracking-wider border border-[#00C9CE]/30">
+        <div className="relative z-10 space-y-3 max-w-3xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#00C9CE]/20 text-[#00C9CE] text-xs font-black uppercase tracking-wider border border-[#00C9CE]/40">
             <Sparkles className="w-4 h-4 text-[#00C9CE]" />
-            <span>START SELLING ON KAYAD</span>
+            <span>KAYAD SELLER ONBOARDING EXPERIENCE</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black font-serif tracking-tight text-white">
-            Create Your Account
+            Sell Your Vehicle with Confidence
           </h1>
 
-          <p className="text-sm sm:text-base text-slate-200 font-medium leading-relaxed">
-            Join thousands of sellers reaching verified buyers across Kenya.
+          <p className="text-xs sm:text-sm text-slate-200 font-medium leading-relaxed max-w-2xl mx-auto">
+            Connect directly with thousands of pre-verified buyers across Kenya. Benefit from CBK-regulated Escrow Vault payment protection, standardized 150-point inspection certification, and nationwide marketplace exposure.
           </p>
+
+          {/* Value Props Bar */}
+          <div className="pt-2 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-left text-xs max-w-2xl mx-auto">
+            <div className="p-2.5 rounded-xl bg-white/10 border border-white/15 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-[#00C9CE] shrink-0" />
+              <div>
+                <span className="font-bold text-white block text-[11px]">Escrow Vault</span>
+                <span className="text-[9px] text-slate-300 block">Guaranteed funds</span>
+              </div>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-white/10 border border-white/15 flex items-center gap-2">
+              <User className="w-4 h-4 text-[#2ECC71] shrink-0" />
+              <div>
+                <span className="font-bold text-white block text-[11px]">Verified Buyers</span>
+                <span className="text-[9px] text-slate-300 block">Pre-qualified leads</span>
+              </div>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-white/10 border border-white/15 flex items-center gap-2">
+              <FileCheck2 className="w-4 h-4 text-[#00C9CE] shrink-0" />
+              <div>
+                <span className="font-bold text-white block text-[11px]">150-Pt Audits</span>
+                <span className="text-[9px] text-slate-300 block">Certified reports</span>
+              </div>
+            </div>
+
+            <div className="p-2.5 rounded-xl bg-white/10 border border-white/15 flex items-center gap-2">
+              <Globe2 className="w-4 h-4 text-[#00C9CE] shrink-0" />
+              <div>
+                <span className="font-bold text-white block text-[11px]">Nationwide Reach</span>
+                <span className="text-[9px] text-slate-300 block">All 47 counties</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -102,7 +146,7 @@ export const SellPage: React.FC = () => {
           {/* Step 1 Indicator */}
           <button
             onClick={() => setCurrentStep(1)}
-            className="relative z-10 flex items-center gap-3 bg-[#FCF9F4] pr-4 group"
+            className="relative z-10 flex items-center gap-3 bg-[#FCF9F4] pr-4 group cursor-pointer"
           >
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-mono font-black text-sm transition-all ${
               currentStep === 1 
@@ -114,7 +158,7 @@ export const SellPage: React.FC = () => {
             <div className="text-left hidden sm:block">
               <span className="text-[10px] font-black uppercase text-[#00C9CE] tracking-wider block">Step 01</span>
               <span className={`text-xs font-bold font-serif ${currentStep === 1 ? 'text-[#1E3063]' : 'text-[#6B7A99]'}`}>
-                Choose Account Type
+                Select Seller Type
               </span>
             </div>
           </button>
@@ -122,7 +166,7 @@ export const SellPage: React.FC = () => {
           {/* Step 2 Indicator */}
           <button
             onClick={() => setCurrentStep(2)}
-            className="relative z-10 flex items-center gap-3 bg-[#FCF9F4] pl-4 group"
+            className="relative z-10 flex items-center gap-3 bg-[#FCF9F4] pl-4 group cursor-pointer"
           >
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-mono font-black text-sm transition-all ${
               currentStep === 2 
@@ -134,7 +178,7 @@ export const SellPage: React.FC = () => {
             <div className="text-left hidden sm:block">
               <span className="text-[10px] font-black uppercase text-[#6B7A99] tracking-wider block">Step 02</span>
               <span className={`text-xs font-bold font-serif ${currentStep === 2 ? 'text-[#1E3063]' : 'text-[#6B7A99]'}`}>
-                Your Details
+                Seller Onboarding Profile
               </span>
             </div>
           </button>
@@ -147,10 +191,10 @@ export const SellPage: React.FC = () => {
         <div className="p-6 sm:p-10 rounded-3xl bg-white border border-[#E2D8C7] shadow-sm space-y-8">
           <div className="text-center space-y-1.5 border-b border-[#E8E1D5] pb-6">
             <h2 className="text-2xl sm:text-3xl font-black text-[#1E3063] font-serif tracking-tight">
-              How would you like to sell?
+              Select Your Seller Onboarding Path
             </h2>
             <p className="text-xs sm:text-sm text-[#6B7A99] font-medium">
-              Choose the account type that fits your needs.
+              Position your sales channel according to your scale — individual owner or professional dealer.
             </p>
           </div>
 
@@ -179,11 +223,14 @@ export const SellPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-black text-[#1E3063] font-serif">
-                    Private Seller
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-black text-[#1E3063] font-serif">
+                      Private Seller
+                    </h3>
+                    <span className="px-2 py-0.5 rounded bg-[#1E3063]/10 text-[#1E3063] text-[9px] font-extrabold uppercase">Individual Owner</span>
+                  </div>
                   <p className="text-xs text-[#3D4F6F] font-medium leading-relaxed mt-1">
-                    Sell your personal vehicle quickly and safely. No business registration required.
+                    Ideal for individual vehicle owners seeking a safe, professional sales process with full escrow protection. No business registration required.
                   </p>
                 </div>
 
@@ -191,27 +238,27 @@ export const SellPage: React.FC = () => {
                 <ul className="space-y-2.5 pt-2 border-t border-[#E8E1D5]">
                   <li className="flex items-center gap-2.5 text-xs text-[#1E3063] font-semibold">
                     <CheckCircle2 className="w-4 h-4 text-[#00C9CE] shrink-0" />
-                    <span>List up to 3 vehicles</span>
+                    <span>List up to 3 personal vehicles concurrently</span>
                   </li>
                   <li className="flex items-center gap-2.5 text-xs text-[#1E3063] font-semibold">
                     <CheckCircle2 className="w-4 h-4 text-[#00C9CE] shrink-0" />
-                    <span>M-Pesa escrow on every sale</span>
+                    <span>CBK-regulated Escrow Vault payment protection</span>
                   </li>
                   <li className="flex items-center gap-2.5 text-xs text-[#1E3063] font-semibold">
                     <CheckCircle2 className="w-4 h-4 text-[#00C9CE] shrink-0" />
-                    <span>Free KAYAD certification badge</span>
+                    <span>Free KAYAD Verified Listing Certification Badge</span>
                   </li>
                   <li className="flex items-center gap-2.5 text-xs text-[#1E3063] font-semibold">
                     <CheckCircle2 className="w-4 h-4 text-[#00C9CE] shrink-0" />
-                    <span>Direct buyer messaging</span>
+                    <span>Direct encrypted buyer messaging & offer management</span>
                   </li>
                 </ul>
               </div>
 
               {/* Price Tag */}
               <div className="pt-4 border-t border-[#E8E1D5]">
-                <span className="text-sm font-black text-[#1E3063] font-mono block">
-                  Free · No monthly fees
+                <span className="text-xs font-black text-[#1E3063] uppercase tracking-wider block">
+                  Zero Monthly Subscriptions · Standard Escrow Safety
                 </span>
               </div>
             </div>
@@ -228,7 +275,7 @@ export const SellPage: React.FC = () => {
               {/* Popular Badge */}
               <div className="absolute top-4 right-4">
                 <span className="px-3 py-1 rounded-full bg-[#2ECC71] text-[#121D33] text-[10px] font-black uppercase tracking-wider shadow-sm">
-                  Popular
+                  Recommended for Showrooms
                 </span>
               </div>
 
@@ -247,11 +294,14 @@ export const SellPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <h3 className={`text-xl font-black font-serif ${selectedType === 'dealer' ? 'text-white' : 'text-[#1E3063]'}`}>
-                    Verified Dealer
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className={`text-xl font-black font-serif ${selectedType === 'dealer' ? 'text-white' : 'text-[#1E3063]'}`}>
+                      Verified Dealership
+                    </h3>
+                    <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase ${selectedType === 'dealer' ? 'bg-[#00C9CE]/20 text-[#00C9CE]' : 'bg-[#1E3063]/10 text-[#1E3063]'}`}>Pro Inventory</span>
+                  </div>
                   <p className={`text-xs font-medium leading-relaxed mt-1 ${selectedType === 'dealer' ? 'text-slate-300' : 'text-[#3D4F6F]'}`}>
-                    List your entire inventory. Get verified status and reach serious buyers.
+                    Designed for commercial dealerships & showroom managers requiring full inventory scaling, auction marketplace listing, and priority search placement.
                   </p>
                 </div>
 
@@ -259,35 +309,31 @@ export const SellPage: React.FC = () => {
                 <ul className={`space-y-2.5 pt-2 border-t ${selectedType === 'dealer' ? 'border-white/10' : 'border-[#E8E1D5]'}`}>
                   <li className={`flex items-center gap-2.5 text-xs font-semibold ${selectedType === 'dealer' ? 'text-slate-200' : 'text-[#1E3063]'}`}>
                     <CheckCircle2 className="w-4 h-4 text-[#2ECC71] shrink-0" />
-                    <span>Unlimited vehicle listings</span>
+                    <span>Unlimited vehicle inventory listings</span>
                   </li>
                   <li className={`flex items-center gap-2.5 text-xs font-semibold ${selectedType === 'dealer' ? 'text-slate-200' : 'text-[#1E3063]'}`}>
                     <CheckCircle2 className="w-4 h-4 text-[#2ECC71] shrink-0" />
-                    <span>Dedicated dealer dashboard</span>
+                    <span>KAYAD Auction & Marketplace channel access</span>
                   </li>
                   <li className={`flex items-center gap-2.5 text-xs font-semibold ${selectedType === 'dealer' ? 'text-slate-200' : 'text-[#1E3063]'}`}>
                     <CheckCircle2 className="w-4 h-4 text-[#2ECC71] shrink-0" />
-                    <span>Priority search placement</span>
+                    <span>Priority placement in buyer search results</span>
                   </li>
                   <li className={`flex items-center gap-2.5 text-xs font-semibold ${selectedType === 'dealer' ? 'text-slate-200' : 'text-[#1E3063]'}`}>
                     <CheckCircle2 className="w-4 h-4 text-[#2ECC71] shrink-0" />
-                    <span>Bulk upload & management tools</span>
+                    <span>Verified Dealership Trust Badge & Showroom Page</span>
                   </li>
                   <li className={`flex items-center gap-2.5 text-xs font-semibold ${selectedType === 'dealer' ? 'text-slate-200' : 'text-[#1E3063]'}`}>
                     <CheckCircle2 className="w-4 h-4 text-[#2ECC71] shrink-0" />
-                    <span>Monthly analytics report</span>
-                  </li>
-                  <li className={`flex items-center gap-2.5 text-xs font-semibold ${selectedType === 'dealer' ? 'text-slate-200' : 'text-[#1E3063]'}`}>
-                    <CheckCircle2 className="w-4 h-4 text-[#2ECC71] shrink-0" />
-                    <span>Dedicated account manager</span>
+                    <span>Dedicated KAYAD Account Manager & Bulk Upload tools</span>
                   </li>
                 </ul>
               </div>
 
               {/* Price Tag */}
               <div className={`pt-4 border-t ${selectedType === 'dealer' ? 'border-white/10' : 'border-[#E8E1D5]'}`}>
-                <span className={`text-sm font-black font-mono block ${selectedType === 'dealer' ? 'text-[#00C9CE]' : 'text-[#1E3063]'}`}>
-                  From KES 2,500/month
+                <span className={`text-xs font-black uppercase tracking-wider block ${selectedType === 'dealer' ? 'text-[#00C9CE]' : 'text-[#1E3063]'}`}>
+                  100% Free Onboarding · Full Pro Inventory Access Included
                 </span>
               </div>
             </div>
@@ -298,18 +344,18 @@ export const SellPage: React.FC = () => {
           <div className="pt-6 border-t border-[#E8E1D5] flex flex-col sm:flex-row items-center justify-between gap-4">
             <button
               onClick={() => openAuthModal()}
-              className="text-xs font-bold text-[#1E3063] hover:text-[#00C9CE] underline"
+              className="text-xs font-bold text-[#1E3063] hover:text-[#00C9CE] underline cursor-pointer"
             >
-              Already have an account? Sign In
+              Already registered on KAYAD? Sign In to Seller Portal
             </button>
 
             <Button
               variant="primary"
               onClick={handleContinue}
-              className="w-full sm:w-auto bg-[#1E3063] hover:bg-[#0B1628] text-white font-black text-xs py-3.5 px-10 uppercase tracking-wider shadow-md"
+              className="w-full sm:w-auto bg-[#1E3063] hover:bg-[#0B1628] text-white font-black text-xs py-3.5 px-10 uppercase tracking-wider shadow-md cursor-pointer"
               rightIcon={<ArrowRight className="w-4 h-4 text-[#00C9CE]" />}
             >
-              Continue
+              Proceed to Onboarding Profile
             </Button>
           </div>
         </div>
@@ -319,16 +365,16 @@ export const SellPage: React.FC = () => {
           <div className="flex items-center justify-between border-b border-[#E8E1D5] pb-4">
             <div>
               <span className="text-[10px] font-black uppercase text-[#00C9CE] tracking-widest block">
-                {selectedType === 'dealer' ? 'DEALERSHIP REGISTRATION' : 'PRIVATE SELLER ACCOUNT'}
+                {selectedType === 'dealer' ? 'DEALERSHIP ONBOARDING PROFILE' : 'PRIVATE SELLER ONBOARDING PROFILE'}
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-[#1E3063] font-serif tracking-tight">
-                Enter Your Details
+                Enter Seller Verification Details
               </h2>
             </div>
 
             <button
               onClick={() => setCurrentStep(1)}
-              className="px-3 py-1.5 rounded-xl border border-[#E2D8C7] bg-[#F6F1E8] text-xs font-bold text-[#1E3063] flex items-center gap-1.5 hover:bg-[#E2D8C7]"
+              className="px-3 py-1.5 rounded-xl border border-[#E2D8C7] bg-[#F6F1E8] text-xs font-bold text-[#1E3063] flex items-center gap-1.5 hover:bg-[#E2D8C7] cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back</span>
@@ -338,9 +384,9 @@ export const SellPage: React.FC = () => {
           {isSuccess ? (
             <div className="p-8 rounded-3xl bg-[#2ECC71]/20 border border-[#2ECC71]/40 text-[#121D33] text-center space-y-3">
               <CheckCircle2 className="w-12 h-12 text-[#2ECC71] mx-auto" />
-              <h3 className="text-xl font-extrabold font-serif">Registration Successful!</h3>
+              <h3 className="text-xl font-extrabold font-serif">Seller Profile Onboarded Successfully!</h3>
               <p className="text-xs font-semibold">
-                Your {selectedType === 'dealer' ? 'Dealership' : 'Private Seller'} account has been created. Redirecting to your dashboard...
+                Your {selectedType === 'dealer' ? 'Dealership' : 'Private Seller'} account is verified. Redirecting to your KAYAD Seller Dashboard...
               </p>
             </div>
           ) : (
@@ -348,7 +394,7 @@ export const SellPage: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-xs font-bold text-[#1E3063] uppercase tracking-wider mb-1.5">
-                    {selectedType === 'dealer' ? 'Dealership Business Name' : 'Full Name'}
+                    {selectedType === 'dealer' ? 'Registered Business / Showroom Name *' : 'Full Legal Name *'}
                   </label>
                   <div className="relative">
                     <User className="w-4 h-4 text-[#6B7A99] absolute left-3.5 top-3.5" />
@@ -365,7 +411,7 @@ export const SellPage: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-[#1E3063] uppercase tracking-wider mb-1.5">
-                    Phone Number (M-Pesa Registered)
+                    Phone Number (M-Pesa Registered) *
                   </label>
                   <div className="relative">
                     <Phone className="w-4 h-4 text-[#6B7A99] absolute left-3.5 top-3.5" />
@@ -382,7 +428,7 @@ export const SellPage: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-[#1E3063] uppercase tracking-wider mb-1.5">
-                    Email Address
+                    Official Email Address *
                   </label>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-[#6B7A99] absolute left-3.5 top-3.5" />
@@ -399,7 +445,7 @@ export const SellPage: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-[#1E3063] uppercase tracking-wider mb-1.5">
-                    City / Primary Location
+                    Primary Region / County
                   </label>
                   <div className="relative">
                     <MapPin className="w-4 h-4 text-[#6B7A99] absolute left-3.5 top-3.5" />
@@ -408,11 +454,11 @@ export const SellPage: React.FC = () => {
                       onChange={e => setFormData({ ...formData, city: e.target.value })}
                       className="w-full pl-10 pr-4 py-3 bg-[#F6F1E8] border border-[#E2D8C7] rounded-xl text-xs font-bold text-[#1E3063] focus:outline-none focus:ring-2 focus:ring-[#00C9CE]"
                     >
-                      <option value="Nairobi">Nairobi</option>
-                      <option value="Mombasa">Mombasa</option>
-                      <option value="Kisumu">Kisumu</option>
-                      <option value="Nakuru">Nakuru</option>
-                      <option value="Eldoret">Eldoret</option>
+                      <option value="Nairobi">Nairobi Metropolitan</option>
+                      <option value="Mombasa">Mombasa & Coast</option>
+                      <option value="Kisumu">Kisumu & Western</option>
+                      <option value="Nakuru">Nakuru & Rift Valley</option>
+                      <option value="Eldoret">Eldoret & North Rift</option>
                     </select>
                   </div>
                 </div>
@@ -420,11 +466,16 @@ export const SellPage: React.FC = () => {
 
               {/* Optional First Listing Section */}
               <div className="p-5 rounded-2xl bg-[#F6F1E8] border border-[#E2D8C7] space-y-4">
-                <div className="flex items-center gap-2">
-                  <Car className="w-5 h-5 text-[#00C9CE]" />
-                  <h4 className="text-sm font-extrabold text-[#1E3063] font-serif">
-                    First Vehicle Info (Optional)
-                  </h4>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Car className="w-5 h-5 text-[#00C9CE]" />
+                    <h4 className="text-sm font-extrabold text-[#1E3063] font-serif">
+                      First Vehicle Preview (Optional)
+                    </h4>
+                  </div>
+                  <span className="text-[10px] font-bold text-[#6B7A99] uppercase bg-white px-2 py-0.5 rounded border border-[#E2D8C7]">
+                    Fast-Track Verification
+                  </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -434,13 +485,13 @@ export const SellPage: React.FC = () => {
                       type="text"
                       value={formData.carTitle}
                       onChange={e => setFormData({ ...formData, carTitle: e.target.value })}
-                      placeholder="e.g. Toyota Prado TX"
+                      placeholder="e.g. Toyota Land Cruiser Prado"
                       className="w-full px-3 py-2 bg-white border border-[#E2D8C7] rounded-xl text-xs font-bold text-[#1E3063]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-[#6B7A99] uppercase mb-1">Expected Price (KES)</label>
+                    <label className="block text-[11px] font-bold text-[#6B7A99] uppercase mb-1">Asking Price (KES)</label>
                     <input
                       type="number"
                       value={formData.price}
@@ -451,7 +502,7 @@ export const SellPage: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-[#6B7A99] uppercase mb-1">Year</label>
+                    <label className="block text-[11px] font-bold text-[#6B7A99] uppercase mb-1">Year of Manufacture</label>
                     <input
                       type="text"
                       value={formData.year}
@@ -466,16 +517,16 @@ export const SellPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
                 <p className="text-xs text-[#6B7A99] font-semibold flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-[#2ECC71]" />
-                  Protected under Central Bank of Kenya licensed escrow framework
+                  Protected under Central Bank of Kenya ring-fenced escrow guidelines
                 </p>
 
                 <Button
                   type="submit"
                   disabled={isSubmitting}
                   variant="primary"
-                  className="w-full sm:w-auto bg-[#1E3063] hover:bg-[#0B1628] text-white font-black text-xs py-3.5 px-8 uppercase tracking-wider shadow-md"
+                  className="w-full sm:w-auto bg-[#1E3063] hover:bg-[#0B1628] text-white font-black text-xs py-3.5 px-8 uppercase tracking-wider shadow-md cursor-pointer"
                 >
-                  {isSubmitting ? 'Creating Account...' : 'Complete Account Registration'}
+                  {isSubmitting ? 'Onboarding Seller Account...' : 'Complete Seller Onboarding'}
                 </Button>
               </div>
             </form>

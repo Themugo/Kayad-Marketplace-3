@@ -28,7 +28,10 @@ import {
   Copy,
   Check,
   Eye,
-  Info
+  Info,
+  Bell,
+  BellRing,
+  TrendingDown
 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { useAuth } from '../../context/AuthContext';
@@ -37,6 +40,7 @@ import { Badge } from '../ui/Badge';
 import { Input } from '../ui/Input';
 import { NavigationBar } from '../common/NavigationBar';
 import { Skeleton, VehicleDetailSkeleton } from '../ui/Skeleton';
+import { PriceAlertModal } from './PriceAlertModal';
 
 export const VehicleDetailPage: React.FC = () => {
   const { 
@@ -46,7 +50,8 @@ export const VehicleDetailPage: React.FC = () => {
     navigateTo, 
     openChat, 
     savedVehicleIds, 
-    toggleSaveVehicle 
+    toggleSaveVehicle,
+    getPriceAlertForVehicle
   } = useMarketplace();
 
   const { user } = useAuth();
@@ -56,6 +61,16 @@ export const VehicleDetailPage: React.FC = () => {
   const [activeImgIndex, setActiveImgIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
+
+  // Price alert state
+  const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+  const existingAlert = vehicle ? getPriceAlertForVehicle(vehicle.id) : undefined;
+
+  // Formatted full title to prevent duplicate year issues
+  const formattedFullTitle = vehicle
+    ? (vehicle.title.startsWith(String(vehicle.year)) ? vehicle.title : `${vehicle.year} ${vehicle.title}`)
+    : '';
 
   // Zoom and Image Loading State
   const [isImageLoading, setIsImageLoading] = useState(true);
@@ -133,18 +148,21 @@ export const VehicleDetailPage: React.FC = () => {
   const selectImage = (idx: number) => {
     if (idx === activeImgIndex) return;
     setIsImageLoading(true);
+    setImageFailed(false);
     setIsDoubleTapZoomed(false);
     setActiveImgIndex(idx);
   };
 
   const handlePrevImage = () => {
     setIsImageLoading(true);
+    setImageFailed(false);
     setIsDoubleTapZoomed(false);
     setActiveImgIndex(prev => (prev === 0 ? totalImages - 1 : prev - 1));
   };
 
   const handleNextImage = () => {
     setIsImageLoading(true);
+    setImageFailed(false);
     setIsDoubleTapZoomed(false);
     setActiveImgIndex(prev => (prev === totalImages - 1 ? 0 : prev + 1));
   };
@@ -254,11 +272,11 @@ export const VehicleDetailPage: React.FC = () => {
       )}
 
       {/* Top Left Navigation Breadcrumbs */}
-      <NavigationBar currentTitle={`${vehicle.year} ${vehicle.title}`} />
+      <NavigationBar currentTitle={vehicle.title.startsWith(String(vehicle.year)) ? vehicle.title : `${vehicle.year} ${vehicle.title}`} />
 
       {/* Top Title & Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#E8E1D5]">
-        <div className="space-y-2">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-5 border-b border-[#E8E1D5]">
+        <div className="space-y-2.5 max-w-3xl">
           {/* Breadcrumb path */}
           <div className="flex items-center gap-2 text-xs text-[#6B7A99] font-semibold">
             <button 
@@ -273,12 +291,12 @@ export const VehicleDetailPage: React.FC = () => {
             <span className="text-[#00C9CE] font-bold">{vehicle.year} {vehicle.model}</span>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-[#1E3063] tracking-tight font-serif">
-            {vehicle.title}
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-[#1E3063] tracking-tight font-serif leading-tight">
+            {vehicle.title.startsWith(String(vehicle.year)) ? vehicle.title : `${vehicle.year} ${vehicle.title}`}
           </h1>
 
           {/* Interactive Market Status Badges */}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
+          <div className="flex flex-wrap items-center gap-2 pt-0.5">
             {/* Escrow Protected Badge */}
             <button
               onClick={() => navigateTo('escrow')}
@@ -301,7 +319,7 @@ export const VehicleDetailPage: React.FC = () => {
               title="Click to view Live Auction Floor"
             >
               <Gavel className="w-3.5 h-3.5 text-amber-600 group-hover:scale-110 transition-transform" />
-              <span>{vehicle.listingType === 'auction' ? 'Live Auction Floor' : 'Fixed Price / Direct Purchase'}</span>
+              <span>{vehicle.listingType === 'auction' ? 'Live Auction Floor' : 'Verified Fixed Price'}</span>
               <ChevronRight className="w-3 h-3 text-slate-500" />
             </button>
 
@@ -312,23 +330,23 @@ export const VehicleDetailPage: React.FC = () => {
               title="Click to book 150-Point Pre-Purchase Inspection"
             >
               <Wrench className="w-3.5 h-3.5 text-[#00C9CE] group-hover:scale-110 transition-transform" />
-              <span>Book Ghost Check Inspection</span>
+              <span>150-Point Inspected</span>
               <ChevronRight className="w-3 h-3 text-[#00C9CE]" />
             </button>
 
             {/* Availability Status */}
             <span className="px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Available</span>
+              <span>Ready for Delivery</span>
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-[#3D4F6F]">
+          <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-[#3D4F6F]">
             <span className="flex items-center gap-1 font-semibold">
               <MapPin className="w-3.5 h-3.5 text-[#00C9CE]" />
               {vehicle.location}
             </span>
-            <span>•</span>
+            <span className="text-[#E2D8C7]">•</span>
             <span className="font-semibold flex items-center gap-1.5">
               <span>VIN:</span>
               <code className="font-mono bg-[#F6F1E8] border border-[#E2D8C7] px-2 py-0.5 rounded text-[#1E3063] font-bold">
@@ -342,39 +360,61 @@ export const VehicleDetailPage: React.FC = () => {
                 {copiedVin ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
               </button>
             </span>
-            <span>•</span>
-            <span className="flex items-center gap-1 text-[#6B7A99]">
+            <span className="text-[#E2D8C7]">•</span>
+            <span className="flex items-center gap-1 text-[#6B7A99] font-medium">
               <Eye className="w-3.5 h-3.5" />
               <span>{vehicle.viewsCount || 142} Views</span>
             </span>
           </div>
         </div>
 
-        {/* Action Controls: Share & Favorite & Chat */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        {/* Action Controls: Share & Favorite & Price Alert & Chat */}
+        <div className="flex flex-wrap items-center gap-2 shrink-0 pt-1 md:pt-0">
+          <button
+            onClick={() => setIsAlertModalOpen(true)}
+            className={`px-3.5 py-2.5 rounded-xl border font-bold text-xs flex items-center gap-2 transition-all cursor-pointer shadow-2xs ${
+              existingAlert
+                ? 'bg-[#1E3063] text-white border-[#1E3063] ring-2 ring-[#00C9CE]/50'
+                : 'border-[#E2D8C7] bg-white text-[#1E3063] hover:border-[#00C9CE] hover:bg-[#F6F1E8]'
+            }`}
+            title={existingAlert ? `Price Alert Active (< KSh ${existingAlert.targetPrice.toLocaleString()})` : "Set Price Alert"}
+          >
+            {existingAlert ? (
+              <>
+                <BellRing className="w-4 h-4 text-[#00C9CE] animate-bounce" />
+                <span>Alert Active</span>
+              </>
+            ) : (
+              <>
+                <Bell className="w-4 h-4 text-[#00C9CE]" />
+                <span>Price Alert</span>
+              </>
+            )}
+          </button>
+
           <button
             onClick={handleShareVehicle}
-            className="p-3 rounded-xl border border-[#E2D8C7] bg-white text-[#1E3063] hover:border-[#1E3063] transition-all cursor-pointer shadow-2xs"
+            className="p-2.5 rounded-xl border border-[#E2D8C7] bg-white text-[#1E3063] hover:border-[#1E3063] transition-all cursor-pointer shadow-2xs"
             title="Share Vehicle"
           >
-            {copiedLink ? <Check className="w-5 h-5 text-emerald-600" /> : <Share2 className="w-5 h-5" />}
+            {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
           </button>
 
           <button
             onClick={handleToggleSave}
-            className={`p-3 rounded-xl border transition-all cursor-pointer shadow-2xs ${
+            className={`p-2.5 rounded-xl border transition-all cursor-pointer shadow-2xs ${
               isSaved
                 ? 'bg-[#DC3545]/10 border-[#DC3545] text-[#DC3545]'
                 : 'border-[#E2D8C7] bg-white text-[#1E3063] hover:border-[#1E3063]'
             }`}
             title={isSaved ? "Remove from Favorites" : "Save to Favorites"}
           >
-            <Heart className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} />
+            <Heart className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
           </button>
 
           <button
             onClick={() => openChat(vehicle.id)}
-            className="px-4 py-3 rounded-xl bg-[#00C9CE] text-[#1E3063] font-extrabold text-xs flex items-center gap-2 shadow-sm hover:bg-[#00b8bc] transition-all uppercase tracking-wider cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-[#00C9CE] text-[#1E3063] font-black text-xs flex items-center gap-2 shadow-xs hover:bg-[#00b8bc] transition-all uppercase tracking-wider cursor-pointer"
           >
             <MessageSquareText className="w-4 h-4" />
             <span>Chat Dealer</span>
@@ -383,7 +423,7 @@ export const VehicleDetailPage: React.FC = () => {
       </div>
 
       {/* Main Gallery & Details Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         
         {/* Left 2 Cols: Main Interactive Image Gallery + Specs & Inspection */}
         <div className="lg:col-span-2 space-y-6">
@@ -391,7 +431,7 @@ export const VehicleDetailPage: React.FC = () => {
           {/* Main Hero Gallery Image Frame */}
           <div className="space-y-3">
             <div 
-              className="relative h-[380px] sm:h-[480px] rounded-3xl overflow-hidden border border-[#E2D8C7] shadow-xl bg-slate-900 select-none cursor-crosshair group"
+              className="relative h-[420px] sm:h-[520px] lg:h-[580px] rounded-3xl overflow-hidden border border-[#E2D8C7] shadow-xl bg-slate-900 select-none cursor-crosshair group"
               onMouseEnter={() => setIsHoverZooming(true)}
               onMouseLeave={() => setIsHoverZooming(false)}
               onMouseMove={handleImageMouseMove}
@@ -405,22 +445,36 @@ export const VehicleDetailPage: React.FC = () => {
                 <Skeleton className="absolute inset-0 w-full h-full z-0 rounded-3xl bg-slate-800 animate-pulse" />
               )}
 
-              <img
-                src={images[activeImgIndex]}
-                alt={`${vehicle.title} - Image ${activeImgIndex + 1}`}
-                onLoad={() => setIsImageLoading(false)}
-                style={{
-                  transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
-                  transform: isDoubleTapZoomed 
-                    ? 'scale(2.5)' 
-                    : isHoverZooming 
-                      ? 'scale(2)' 
-                      : 'scale(1)',
-                }}
-                className={`w-full h-full object-cover transition-transform duration-200 ease-out ${
-                  isImageLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'
-                }`}
-              />
+              {!imageFailed ? (
+                <img
+                  src={images[activeImgIndex]}
+                  alt={`${formattedFullTitle} - Image ${activeImgIndex + 1}`}
+                  onLoad={() => setIsImageLoading(false)}
+                  onError={() => {
+                    setIsImageLoading(false);
+                    setImageFailed(true);
+                  }}
+                  style={{
+                    transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+                    transform: isDoubleTapZoomed 
+                      ? 'scale(2.5)' 
+                      : isHoverZooming 
+                        ? 'scale(2)' 
+                        : 'scale(1)',
+                  }}
+                  className={`w-full h-full object-cover transition-transform duration-200 ease-out ${
+                    isImageLoading ? 'opacity-0' : 'opacity-100 transition-opacity duration-300'
+                  }`}
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center p-8 text-center bg-gradient-to-br from-[#1E3063] to-[#0F1B38] text-white space-y-3">
+                  <div className="w-16 h-16 rounded-3xl bg-[#00C9CE]/20 border border-[#00C9CE]/40 flex items-center justify-center text-[#00C9CE]">
+                    <ShieldCheck className="w-8 h-8" />
+                  </div>
+                  <h4 className="text-lg font-serif font-black">{formattedFullTitle}</h4>
+                  <p className="text-xs text-slate-300 max-w-sm">Verified Showroom Vehicle • High Resolution Photography Loading</p>
+                </div>
+              )}
 
               {/* Badges Overlay */}
               <div className="absolute top-4 left-4 flex flex-wrap gap-2 z-10 pointer-events-none">
@@ -433,8 +487,8 @@ export const VehicleDetailPage: React.FC = () => {
                   </Badge>
                 )}
                 {activeImgIndex === 0 && (
-                  <span className="px-2.5 py-1 rounded-xl bg-[#1E3063]/90 text-white font-mono text-[10px] font-bold border border-white/20">
-                    Primary Cover Image
+                  <span className="px-2.5 py-1 rounded-xl bg-[#1E3063]/90 text-white font-mono text-[10px] font-bold border border-white/20 shadow-xs">
+                    Primary Showroom Angle
                   </span>
                 )}
               </div>
@@ -486,12 +540,12 @@ export const VehicleDetailPage: React.FC = () => {
             </div>
 
             {/* Scrollable Thumbnails Strip (Up to 10 max) */}
-            <div className="flex items-center gap-3 overflow-x-auto pb-2 pt-1 no-scrollbar">
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-2 pt-1 no-scrollbar">
               {images.map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => selectImage(idx)}
-                  className={`relative w-24 h-18 rounded-2xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                  className={`relative w-24 sm:w-28 h-16 sm:h-20 rounded-2xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
                     activeImgIndex === idx
                       ? 'border-[#00C9CE] scale-105 shadow-md ring-2 ring-[#00C9CE]/30'
                       : 'border-transparent opacity-70 hover:opacity-100'
@@ -553,7 +607,7 @@ export const VehicleDetailPage: React.FC = () => {
             <div className="pt-2 border-t border-[#E8E1D5] space-y-1.5">
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#6B7A99]">Seller Description</h4>
               <p className="text-xs text-[#3D4F6F] leading-relaxed font-medium">
-                {vehicle.description || `Pristine ${vehicle.year} ${vehicle.title} in exceptional condition. Regularly serviced at authorized franchise dealers, duty fully paid with official Kenya logbook ready for immediate transfer.`}
+                {vehicle.description || `Pristine ${vehicle.title.startsWith(String(vehicle.year)) ? vehicle.title : `${vehicle.year} ${vehicle.title}`} in exceptional condition. Regularly serviced at authorized franchise dealers, duty fully paid with official Kenya logbook ready for immediate transfer.`}
               </p>
             </div>
 
@@ -577,82 +631,97 @@ export const VehicleDetailPage: React.FC = () => {
 
           {/* 150-Point Inspection Section */}
           {vehicle.inspection && (
-            <div className="p-6 rounded-3xl bg-[#1E3063] text-white border border-[#1E3063] space-y-4 shadow-md">
-              <div className="flex items-center justify-between">
+            <div className="p-6 rounded-3xl bg-[#1E3063] text-white border border-[#1E3063] space-y-4 shadow-md relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-[#00C9CE]/20 border border-[#00C9CE]/40 flex items-center justify-center text-[#00C9CE]">
-                    <CheckCircle2 className="w-6 h-6" />
+                  <div className="w-12 h-12 rounded-2xl bg-[#00C9CE]/20 border border-[#00C9CE]/40 flex items-center justify-center text-[#00C9CE] shrink-0">
+                    <CheckCircle2 className="w-7 h-7" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-white font-serif">
-                      150-Point Inspection Certification
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base sm:text-lg font-bold text-white font-serif">
+                        150-Point Ghost Check Certification
+                      </h3>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black uppercase bg-[#00C9CE] text-[#1E3063]">
+                        Verified
+                      </span>
+                    </div>
                     <p className="text-xs text-slate-300">
-                      Inspected on {vehicle.inspection.inspectedAt} by {vehicle.inspection.inspectorName}
+                      Inspected on {vehicle.inspection.inspectedAt} by Senior Inspector {vehicle.inspection.inspectorName}
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-3xl font-black text-[#00C9CE] font-serif">
+                <div className="text-left sm:text-right shrink-0">
+                  <span className="text-3xl sm:text-4xl font-black text-[#00C9CE] font-serif block">
                     {vehicle.inspection.score}/100
+                  </span>
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-emerald-400 font-bold block">
+                    Grade A Pass Certificate
                   </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3 text-center pt-2">
-                <div className="p-3 rounded-2xl bg-white/10 border border-white/10">
-                  <span className="text-[10px] text-slate-300 font-bold block uppercase">Engine & Drive</span>
-                  <span className="text-xs font-bold text-[#2ECC71]">{vehicle.inspection.engineHealth}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+                <div className="p-3.5 rounded-2xl bg-white/10 border border-white/10 space-y-1">
+                  <span className="text-[10px] text-slate-300 font-bold block uppercase tracking-wider">Engine & Powertrain</span>
+                  <span className="text-xs font-extrabold text-[#2ECC71]">{vehicle.inspection.engineHealth}</span>
                 </div>
-                <div className="p-3 rounded-2xl bg-white/10 border border-white/10">
-                  <span className="text-[10px] text-slate-300 font-bold block uppercase">Body & Paint</span>
-                  <span className="text-xs font-bold text-[#00C9CE]">{vehicle.inspection.bodyCondition}</span>
+                <div className="p-3.5 rounded-2xl bg-white/10 border border-white/10 space-y-1">
+                  <span className="text-[10px] text-slate-300 font-bold block uppercase tracking-wider">Body & Chassis Integrity</span>
+                  <span className="text-xs font-extrabold text-[#00C9CE]">{vehicle.inspection.bodyCondition}</span>
                 </div>
-                <div className="p-3 rounded-2xl bg-white/10 border border-white/10">
-                  <span className="text-[10px] text-slate-300 font-bold block uppercase">Interior & Tech</span>
-                  <span className="text-xs font-bold text-[#2ECC71]">{vehicle.inspection.interiorHealth}</span>
+                <div className="p-3.5 rounded-2xl bg-white/10 border border-white/10 space-y-1">
+                  <span className="text-[10px] text-slate-300 font-bold block uppercase tracking-wider">Electronics & Systems</span>
+                  <span className="text-xs font-extrabold text-[#2ECC71]">{vehicle.inspection.interiorHealth}</span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* KAYAD Guarantees & Buyer Protection */}
-          <div className="p-6 rounded-3xl bg-white border border-[#E2D8C7] space-y-4 shadow-xs">
-            <h3 className="text-base font-bold text-[#1E3063] font-serif flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-[#00C9CE]" />
-              <span>Buyer Protection & Trust Guarantees</span>
-            </h3>
+          {/* KAYAD Guarantees & Buyer Protection - Redesigned with Brand Theme Colors */}
+          <div className="p-6 rounded-3xl bg-[#1E3063] text-white border border-[#1E3063] space-y-4 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#00C9CE]/15 rounded-full blur-2xl pointer-events-none" />
+            
+            <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3.5 relative z-10">
+              <h3 className="text-base font-bold text-white font-serif flex items-center gap-2.5">
+                <ShieldCheck className="w-5 h-5 text-[#00C9CE]" />
+                <span>Buyer Protection & Trust Guarantees</span>
+              </h3>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#00C9CE]/20 text-[#00C9CE] border border-[#00C9CE]/40">
+                100% KAYAD Verified
+              </span>
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3.5 rounded-2xl bg-[#F6F1E8] border border-[#E2D8C7] flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs relative z-10">
+              <div className="p-3.5 rounded-2xl bg-white/10 border border-white/15 flex items-start gap-3 hover:border-[#00C9CE]/40 transition-colors">
+                <CheckCircle2 className="w-4 h-4 text-[#00C9CE] shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-extrabold text-[#1E3063] block">KRA Duty & Tax Cleared</span>
-                  <span className="text-slate-500 text-[11px]">Full custom clearance & official Kenya logbook transfer.</span>
+                  <span className="font-extrabold text-white block">Official Title & Logbook Cleared</span>
+                  <span className="text-slate-300 text-[11px] leading-relaxed">NTSA logbook ownership verified with zero outstanding encumbrances.</span>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#F6F1E8] border border-[#E2D8C7] flex items-start gap-2.5">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-2xl bg-white/10 border border-white/15 flex items-start gap-3 hover:border-[#00C9CE]/40 transition-colors">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-extrabold text-[#1E3063] block">Accident & Flood Free</span>
-                  <span className="text-slate-500 text-[11px]">Structural chassis integrity verified by master engineers.</span>
+                  <span className="font-extrabold text-white block">Accident & Chassis Inspection Passed</span>
+                  <span className="text-slate-300 text-[11px] leading-relaxed">Structural chassis integrity and body alignment scan passed without defect.</span>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#F6F1E8] border border-[#E2D8C7] flex items-start gap-2.5">
+              <div className="p-3.5 rounded-2xl bg-white/10 border border-white/15 flex items-start gap-3 hover:border-[#00C9CE]/40 transition-colors">
                 <Lock className="w-4 h-4 text-[#00C9CE] shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-extrabold text-[#1E3063] block">M-Pesa Regulated Escrow</span>
-                  <span className="text-slate-500 text-[11px]">48-hour inspection window before funds are released.</span>
+                  <span className="font-extrabold text-white block">Secure M-Pesa Buyer Protection</span>
+                  <span className="text-slate-300 text-[11px] leading-relaxed">Direct M-Pesa or bank transfer backed by 48-hour physical inspection.</span>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#F6F1E8] border border-[#E2D8C7] flex items-start gap-2.5">
-                <FileText className="w-4 h-4 text-[#1E3063] shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-2xl bg-white/10 border border-white/15 flex items-start gap-3 hover:border-[#00C9CE]/40 transition-colors">
+                <FileText className="w-4 h-4 text-[#00C9CE] shrink-0 mt-0.5" />
                 <div>
-                  <span className="font-extrabold text-[#1E3063] block">Service Records Available</span>
-                  <span className="text-slate-500 text-[11px]">Complete franchise dealership maintenance history.</span>
+                  <span className="font-extrabold text-white block">Complete Service History</span>
+                  <span className="text-slate-300 text-[11px] leading-relaxed">Verified franchise maintenance logbook and authentic odometer check.</span>
                 </div>
               </div>
             </div>
@@ -681,7 +750,7 @@ export const VehicleDetailPage: React.FC = () => {
             </div>
 
             <p className="text-xs text-slate-300 leading-relaxed font-medium">
-              Want independent peace of mind before buying this <strong className="text-white">{vehicle.year} {vehicle.title}</strong>? Book an on-demand physical and mechanical scan. Our certified master engineers check 150 points, scan OBD-II fault codes, verify paint depth & test drive the vehicle.
+              Want independent peace of mind before buying this <strong className="text-white">{vehicle.title.startsWith(String(vehicle.year)) ? vehicle.title : `${vehicle.year} ${vehicle.title}`}</strong>? Book an on-demand physical and mechanical scan. Our certified master engineers check 150 points, scan OBD-II fault codes, verify paint depth & test drive the vehicle.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
@@ -709,21 +778,55 @@ export const VehicleDetailPage: React.FC = () => {
         <div className="space-y-6 lg:sticky lg:top-24 h-fit">
           
           {/* Purchase / Bidding Action Card */}
-          <div className="p-6 rounded-3xl bg-white border border-[#E2D8C7] shadow-lg space-y-6">
+          <div className="p-6 rounded-3xl bg-white border border-[#E2D8C7] shadow-lg space-y-5">
             
             {/* Price Header */}
-            <div className="space-y-1 border-b border-[#E8E1D5] pb-4">
+            <div className="space-y-3 border-b border-[#E8E1D5] pb-4">
               <span className="text-[10px] font-bold text-[#6B7A99] uppercase tracking-wider block">
                 Listed Purchase Price
               </span>
-              <div className="flex items-baseline justify-between">
+              <div className="flex items-baseline justify-between gap-2">
                 <span className="text-3xl font-black text-[#1E3063] font-serif">
                   KSh {vehicle.price.toLocaleString()}
                 </span>
-                <span className="text-xs text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
-                  Duty Cleared
+                <span className="text-xs text-emerald-700 font-extrabold bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200 shrink-0">
+                  Duty Paid
                 </span>
               </div>
+
+              {/* Buy Now Direct Protection CTA Button (Primary Action) */}
+              <button
+                onClick={handleBuyNowEscrow}
+                className="w-full py-3.5 px-4 rounded-xl bg-[#1E3063] hover:bg-[#0B1628] text-white font-extrabold text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all shadow-md border border-[#1E3063] cursor-pointer mt-2"
+              >
+                <Lock className="w-4 h-4 text-[#00C9CE]" />
+                <span>Buy Now via M-Pesa Protection</span>
+              </button>
+
+              <p className="text-[11px] text-[#6B7A99] text-center leading-normal font-medium pt-1">
+                Protected by M-Pesa Direct Payment. Backup guaranteed by 48-hr physical vehicle inspection.
+              </p>
+
+              {/* Set Price Alert Callout */}
+              <button
+                type="button"
+                onClick={() => setIsAlertModalOpen(true)}
+                className={`w-full py-2.5 px-3 rounded-2xl border text-xs font-bold flex items-center justify-between transition-all cursor-pointer mt-1 ${
+                  existingAlert
+                    ? 'bg-[#00C9CE]/15 text-[#1E3063] border-[#00C9CE]/40 hover:bg-[#00C9CE]/25'
+                    : 'bg-[#F6F1E8] text-[#1E3063] border-[#E2D8C7] hover:bg-[#E8E1D5]'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <BellRing className={`w-4 h-4 ${existingAlert ? 'text-[#00C9CE] animate-pulse' : 'text-[#6B7A99]'}`} />
+                  <span className="truncate">
+                    {existingAlert ? `Price Alert: < KSh ${existingAlert.targetPrice.toLocaleString()}` : 'Get notified if price drops'}
+                  </span>
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-[#00C9CE] underline shrink-0">
+                  {existingAlert ? 'Manage' : 'Set Alert'}
+                </span>
+              </button>
             </div>
 
             {/* Auction Bidding Form (if auction or both) */}
@@ -1002,6 +1105,15 @@ export const VehicleDetailPage: React.FC = () => {
 
         </div>
       )}
+
+      {/* Price Alert Configuration Modal */}
+      <PriceAlertModal
+        isOpen={isAlertModalOpen}
+        onClose={() => setIsAlertModalOpen(false)}
+        vehicle={vehicle}
+        existingAlert={existingAlert}
+        onShowToast={showToast}
+      />
 
     </div>
   );

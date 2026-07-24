@@ -92,49 +92,49 @@ export const FilterSidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-full lg:w-72 bg-white border border-[#E2D8C7] rounded-2xl p-5 space-y-6 shrink-0 h-fit shadow-xs text-[#1E3063]">
-      {/* Sidebar Header (REFINE matching Image 2) */}
+    <aside className="w-full lg:w-72 bg-white border border-[#E2D8C7] rounded-2xl p-4 sm:p-5 space-y-5 shrink-0 h-fit shadow-xs text-[#1E3063]">
+      {/* Sidebar Header */}
       <div className="flex items-center justify-between pb-3 border-b border-[#EFE8DA]">
-        <div className="flex items-center gap-2 font-black text-[#1E3063] font-serif text-sm uppercase tracking-wider">
+        <div className="flex items-center gap-2 font-bold text-[#1E3063] font-serif text-sm uppercase tracking-wide">
           <Filter className="w-4 h-4 text-[#00C9CE]" />
           <span>MARKET FILTERS</span>
         </div>
         <button
           onClick={resetFilters}
-          className="text-xs text-[#00C9CE] hover:underline font-extrabold flex items-center gap-1 transition-colors cursor-pointer"
+          className="text-xs text-[#00C9CE] hover:underline font-bold flex items-center gap-1 transition-colors cursor-pointer"
         >
           <RotateCcw className="w-3 h-3" />
           <span>Reset</span>
         </button>
       </div>
 
-      {/* FULL MARKET ASPECT SEARCH & SHOWROOM SUMMARY */}
-      <div className="space-y-2 bg-[#F4EFE6]/80 p-3.5 rounded-2xl border border-[#E2D8C7] shadow-xs">
-        <div className="flex items-center justify-between text-xs font-black text-[#1E3063]">
+      {/* FULL MARKET CATALOG SUMMARY BOX */}
+      <div className="space-y-1.5 bg-[#1E3063]/5 p-3.5 rounded-2xl border border-[#1E3063]/10">
+        <div className="flex items-center justify-between text-xs font-bold text-[#1E3063]">
           <span className="flex items-center gap-1.5 font-serif text-sm">
-            <Sparkles className="w-4 h-4 text-[#00C9CE]" />
+            <Sparkles className="w-3.5 h-3.5 text-[#00C9CE]" />
             Full Market Catalog
           </span>
-          <span className="text-xs font-mono font-black bg-[#00C9CE]/20 text-[#1E3063] px-2 py-0.5 rounded-lg border border-[#00C9CE]/30">
-            {totalCount} Vehicles
+          <span className="text-[11px] font-mono font-bold bg-[#1E3063] text-white px-2 py-0.5 rounded-lg">
+            {totalCount} Cars
           </span>
         </div>
-        <p className="text-xs text-slate-600 font-medium leading-relaxed">
-          Filter by Make, Model, Transmission, Fuel, Body Configuration & Budget.
+        <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+          Filter by Make, Model, Transmission, Fuel, Body & Budget.
         </p>
       </div>
 
       {/* FILTERS SECTION ACCORDIONS */}
-      <div className="space-y-4 pt-1">
-        <span className="text-xs font-mono font-black uppercase tracking-widest text-[#1E3063]/70 block">
-          MARKET SPECIFICATIONS
+      <div className="space-y-3 pt-1">
+        <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#6B7A99] block">
+          SPECIFICATIONS
         </span>
 
         {/* Brand Accordion */}
-        <div className="border border-[#E2D8C7] rounded-2xl overflow-hidden bg-[#F4EFE6]/40 shadow-xs">
+        <div className="border border-[#E2D8C7] rounded-xl overflow-hidden bg-[#F4EFE6]/40 shadow-2xs">
           <button
             onClick={() => toggleSection('brand')}
-            className="w-full p-3.5 flex items-center justify-between text-xs sm:text-sm font-black text-[#1E3063] bg-[#F4EFE6]/90 hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+            className="w-full p-3 flex items-center justify-between text-xs sm:text-sm font-bold text-[#1E3063] bg-[#F4EFE6]/70 hover:bg-[#F4EFE6] transition-colors cursor-pointer"
           >
             <span className="font-serif">Brand / Manufacturer</span>
             <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${openSection.brand ? 'rotate-180' : ''}`} />
@@ -147,12 +147,12 @@ export const FilterSidebar: React.FC = () => {
                   <button
                     key={make}
                     onClick={() => handleMakeToggle(make)}
-                    className={`w-full flex items-center justify-between p-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all text-left cursor-pointer ${
-                      isChecked ? 'bg-[#1E3063] text-white shadow-xs' : 'text-[#1E3063] hover:bg-[#F4EFE6]'
+                    className={`w-full flex items-center justify-between p-2 rounded-lg text-xs sm:text-sm font-semibold transition-all text-left cursor-pointer ${
+                      isChecked ? 'bg-[#1E3063] text-white shadow-2xs' : 'text-[#1E3063] hover:bg-[#F4EFE6]'
                     }`}
                   >
                     <span>{make}</span>
-                    {isChecked && <Check className="w-4 h-4 text-[#00C9CE]" />}
+                    {isChecked && <Check className="w-3.5 h-3.5 text-[#00C9CE]" />}
                   </button>
                 );
               })}
@@ -161,15 +161,15 @@ export const FilterSidebar: React.FC = () => {
         </div>
 
         {/* Transmission Accordion */}
-        <div className="border border-[#E2D8C7] rounded-2xl overflow-hidden bg-[#F4EFE6]/40 shadow-xs">
+        <div className="border border-[#E2D8C7] rounded-xl overflow-hidden bg-[#F4EFE6]/40 shadow-2xs">
           <button
             onClick={() => toggleSection('transmission')}
-            className="w-full p-3.5 flex items-center justify-between text-xs sm:text-sm font-black text-[#1E3063] bg-[#F4EFE6]/90 hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+            className="w-full p-3 flex items-center justify-between text-xs sm:text-sm font-bold text-[#1E3063] bg-[#F4EFE6]/70 hover:bg-[#F4EFE6] transition-colors cursor-pointer"
           >
             <span className="flex items-center gap-1.5 font-serif">
               <span>Transmission</span>
               {filters.transmission && filters.transmission.length > 0 && (
-                <span className="px-2 py-0.5 bg-[#00C9CE] text-[#1E3063] rounded-full text-xs font-mono font-black">
+                <span className="px-1.5 py-0.5 bg-[#00C9CE] text-[#1E3063] rounded-full text-[10px] font-mono font-bold">
                   {filters.transmission.length}
                 </span>
               )}
@@ -184,12 +184,12 @@ export const FilterSidebar: React.FC = () => {
                   <button
                     key={trans}
                     onClick={() => handleTransmissionToggle(trans)}
-                    className={`w-full flex items-center justify-between p-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
-                      isSelected ? 'bg-[#1E3063] text-white shadow-xs' : 'text-[#1E3063] hover:bg-[#F4EFE6]'
+                    className={`w-full flex items-center justify-between p-2 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                      isSelected ? 'bg-[#1E3063] text-white shadow-2xs' : 'text-[#1E3063] hover:bg-[#F4EFE6]'
                     }`}
                   >
                     <span>{trans}</span>
-                    {isSelected && <Check className="w-4 h-4 text-[#00C9CE]" />}
+                    {isSelected && <Check className="w-3.5 h-3.5 text-[#00C9CE]" />}
                   </button>
                 );
               })}
@@ -198,25 +198,25 @@ export const FilterSidebar: React.FC = () => {
         </div>
 
         {/* Body Type Accordion */}
-        <div className="border border-[#E2D8C7] rounded-2xl overflow-hidden bg-[#F4EFE6]/40 shadow-xs">
+        <div className="border border-[#E2D8C7] rounded-xl overflow-hidden bg-[#F4EFE6]/40 shadow-2xs">
           <button
             onClick={() => toggleSection('body')}
-            className="w-full p-3.5 flex items-center justify-between text-xs sm:text-sm font-black text-[#1E3063] bg-[#F4EFE6]/90 hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+            className="w-full p-3 flex items-center justify-between text-xs sm:text-sm font-bold text-[#1E3063] bg-[#F4EFE6]/70 hover:bg-[#F4EFE6] transition-colors cursor-pointer"
           >
             <span className="font-serif">Body Configuration</span>
             <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${openSection.body ? 'rotate-180' : ''}`} />
           </button>
           {openSection.body && (
-            <div className="p-3 flex flex-wrap gap-2 border-t border-[#E2D8C7]/60 bg-white">
+            <div className="p-2.5 flex flex-wrap gap-1.5 border-t border-[#E2D8C7]/60 bg-white">
               {bodyStyles.map(style => {
                 const isSelected = filters.bodyStyles.includes(style);
                 return (
                   <button
                     key={style}
                     onClick={() => handleBodyStyleToggle(style)}
-                    className={`px-3 py-1.5 text-xs rounded-xl font-extrabold transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 text-xs rounded-lg font-semibold transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-[#1E3063] text-white shadow-xs'
+                        ? 'bg-[#1E3063] text-white shadow-2xs'
                         : 'border border-[#E2D8C7] text-[#1E3063] hover:bg-[#F4EFE6]'
                     }`}
                   >
@@ -229,10 +229,10 @@ export const FilterSidebar: React.FC = () => {
         </div>
 
         {/* Fuel Accordion */}
-        <div className="border border-[#E2D8C7] rounded-2xl overflow-hidden bg-[#F4EFE6]/40 shadow-xs">
+        <div className="border border-[#E2D8C7] rounded-xl overflow-hidden bg-[#F4EFE6]/40 shadow-2xs">
           <button
             onClick={() => toggleSection('fuel')}
-            className="w-full p-3.5 flex items-center justify-between text-xs sm:text-sm font-black text-[#1E3063] bg-[#F4EFE6]/90 hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+            className="w-full p-3 flex items-center justify-between text-xs sm:text-sm font-bold text-[#1E3063] bg-[#F4EFE6]/70 hover:bg-[#F4EFE6] transition-colors cursor-pointer"
           >
             <span className="font-serif">Fuel & Powertrain</span>
             <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${openSection.fuel ? 'rotate-180' : ''}`} />
@@ -245,12 +245,12 @@ export const FilterSidebar: React.FC = () => {
                   <button
                     key={f.id}
                     onClick={() => handleFuelToggle(f.id)}
-                    className={`w-full flex items-center justify-between p-2 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer ${
-                      isSelected ? 'bg-[#1E3063] text-white shadow-xs' : 'text-[#1E3063] hover:bg-[#F4EFE6]'
+                    className={`w-full flex items-center justify-between p-2 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                      isSelected ? 'bg-[#1E3063] text-white shadow-2xs' : 'text-[#1E3063] hover:bg-[#F4EFE6]'
                     }`}
                   >
                     <span>{f.label}</span>
-                    {isSelected && <Check className="w-4 h-4 text-[#00C9CE]" />}
+                    {isSelected && <Check className="w-3.5 h-3.5 text-[#00C9CE]" />}
                   </button>
                 );
               })}
@@ -259,37 +259,43 @@ export const FilterSidebar: React.FC = () => {
         </div>
 
         {/* City / Location Accordion */}
-        <div className="border border-[#E2D8C7] rounded-2xl overflow-hidden bg-[#F4EFE6]/40 shadow-xs">
+        <div className="border border-[#E2D8C7] rounded-xl overflow-hidden bg-[#F4EFE6]/40 shadow-2xs">
           <button
             onClick={() => toggleSection('city')}
-            className="w-full p-3.5 flex items-center justify-between text-xs sm:text-sm font-black text-[#1E3063] bg-[#F4EFE6]/90 hover:bg-[#F4EFE6] transition-colors cursor-pointer"
+            className="w-full p-3 flex items-center justify-between text-xs sm:text-sm font-bold text-[#1E3063] bg-[#F4EFE6]/70 hover:bg-[#F4EFE6] transition-colors cursor-pointer"
           >
             <span className="font-serif">City / Hub</span>
             <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform ${openSection.city ? 'rotate-180' : ''}`} />
           </button>
           {openSection.city && (
             <div className="p-2 space-y-1 border-t border-[#E2D8C7]/60 bg-white">
-              {cities.map(city => (
-                <button
-                  key={city}
-                  onClick={() => setFilters(prev => ({ ...prev, searchQuery: city }))}
-                  className="w-full flex items-center justify-between p-2 rounded-xl text-xs sm:text-sm font-extrabold text-[#1E3063] hover:bg-[#F4EFE6] transition-colors cursor-pointer"
-                >
-                  <span className="flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-[#00C9CE]" />
-                    {city}
-                  </span>
-                </button>
-              ))}
+              {cities.map(city => {
+                const isSelected = filters.searchQuery.toLowerCase() === city.toLowerCase();
+                return (
+                  <button
+                    key={city}
+                    onClick={() => setFilters(prev => ({ ...prev, searchQuery: isSelected ? '' : city }))}
+                    className={`w-full flex items-center justify-between p-2 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                      isSelected ? 'bg-[#1E3063] text-white shadow-2xs' : 'text-[#1E3063] hover:bg-[#F4EFE6]'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-[#00C9CE]" />
+                      {city}
+                    </span>
+                    {isSelected && <Check className="w-3.5 h-3.5 text-[#00C9CE]" />}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
 
         {/* Max Price Slider */}
-        <div className="border border-[#E2D8C7] rounded-2xl p-4 bg-[#F4EFE6]/60 space-y-3 shadow-xs">
+        <div className="border border-[#E2D8C7] rounded-xl p-3.5 bg-[#F4EFE6]/60 space-y-2.5 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs sm:text-sm font-black text-[#1E3063] font-serif">Max Budget</span>
-            <span className="font-mono font-black text-xs sm:text-sm text-[#1E3063] bg-[#00C9CE]/20 border border-[#00C9CE]/40 px-2.5 py-1 rounded-xl">
+            <span className="text-xs sm:text-sm font-bold text-[#1E3063] font-serif">Max Budget</span>
+            <span className="font-mono font-bold text-xs text-[#1E3063] bg-[#00C9CE]/20 border border-[#00C9CE]/40 px-2 py-0.5 rounded-lg">
               {filters.maxPrice < 1000000 
                 ? `KES ${(filters.maxPrice / 1000).toLocaleString()}K`
                 : `KES ${(filters.maxPrice / 1000000).toFixed(1)}M`}
@@ -307,7 +313,7 @@ export const FilterSidebar: React.FC = () => {
         </div>
 
         {/* Ghost Check Verification Toggle */}
-        <label className="flex items-center justify-between text-xs sm:text-sm font-black text-[#1E3063] cursor-pointer p-3.5 rounded-2xl bg-[#F4EFE6] border border-[#E2D8C7] shadow-xs hover:border-[#1E3063] transition-all">
+        <label className="flex items-center justify-between text-xs sm:text-sm font-bold text-[#1E3063] cursor-pointer p-3 rounded-xl bg-[#F4EFE6] border border-[#E2D8C7] shadow-2xs hover:border-[#1E3063] transition-all">
           <span className="flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
             150-Pt Inspected Vehicles

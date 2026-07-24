@@ -139,15 +139,30 @@ export interface DealerProfile {
   badge: string;
 }
 
+export interface PriceAlert {
+  id: string;
+  userId: string;
+  vehicleId: string;
+  vehicleTitle: string;
+  targetPrice: number;
+  alertOnPriceDrop: boolean;
+  alertOnStatusChange: boolean;
+  currentPriceAtSet: number;
+  notifyMethod: 'in_app' | 'email' | 'both';
+  createdAt: string;
+  isActive: boolean;
+}
+
 export interface NotificationItem {
   id: string;
   userId: string;
   title: string;
   message: string;
-  type: 'bid' | 'outbid' | 'auction_won' | 'escrow' | 'message' | 'system';
+  type: 'bid' | 'outbid' | 'auction_won' | 'escrow' | 'message' | 'system' | 'price_alert' | 'price_drop' | 'status_change';
   isRead: boolean;
   createdAt: string;
   linkUrl?: string;
+  vehicleId?: string;
 }
 
 export interface ChatMessage {

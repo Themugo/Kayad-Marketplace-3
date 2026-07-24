@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Bell, Check, ExternalLink, ShieldCheck, Gavel, MessageSquare, X } from 'lucide-react';
+import { Bell, Check, ExternalLink, ShieldCheck, Gavel, MessageSquare, X, TrendingDown, Tag, BellRing } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 
 interface NotificationPanelProps {
@@ -22,6 +22,12 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ isOpen, on
         return <ShieldCheck className="w-4 h-4 text-[#2ECC71]" />;
       case 'message':
         return <MessageSquare className="w-4 h-4 text-[#00C9CE]" />;
+      case 'price_drop':
+        return <TrendingDown className="w-4 h-4 text-[#00C9CE]" />;
+      case 'status_change':
+        return <Tag className="w-4 h-4 text-[#E67E22]" />;
+      case 'price_alert':
+        return <BellRing className="w-4 h-4 text-[#00C9CE]" />;
       default:
         return <Bell className="w-4 h-4 text-[#6C5CE7]" />;
     }
@@ -61,8 +67,14 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({ isOpen, on
                 key={notif.id}
                 onClick={() => {
                   markNotificationRead(notif.id);
-                  if (notif.type === 'escrow') navigateTo('escrow');
-                  if (notif.type === 'bid') navigateTo('auctions');
+                  if (notif.vehicleId) {
+                    navigateTo('vehicle_detail', notif.vehicleId);
+                  } else if (notif.type === 'escrow') {
+                    navigateTo('escrow');
+                  } else if (notif.type === 'bid') {
+                    navigateTo('auctions');
+                  }
+                  onClose();
                 }}
                 className={`p-3 rounded-xl cursor-pointer transition-colors ${
                   notif.isRead

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Gavel, Clock, ShieldCheck, Flame, User, ArrowUpRight, Check, Lock, AlertCircle, X, Sparkles, Building2, Phone, CreditCard, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Gavel, Clock, ShieldCheck, Flame, User, ArrowUpRight, Check, Lock, AlertCircle, X, Sparkles, Building2, Phone, CreditCard, ChevronRight, CheckCircle2, Eye, TrendingUp, Zap, Award, BarChart2 } from 'lucide-react';
 import { useMarketplace } from '../../context/MarketplaceContext';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../ui/Button';
@@ -19,10 +19,18 @@ interface AuctionLot {
   currentBid: number;
   bidsCount: number;
   endsInSeconds: number;
+  startsInSeconds?: number;
+  status?: 'live' | 'upcoming' | 'ended' | 'canceled' | 'suspended';
   imageUrl: string;
   vin: string;
   location: string;
   inspectionScore: number;
+  reserveStatus?: 'met' | 'near' | 'no_reserve';
+  watchers?: number;
+  estMarketValue?: number;
+  bidsLastHour?: number;
+  dutyCleared?: boolean;
+  logbookVerified?: boolean;
 }
 
 const INITIAL_AUCTION_LOTS: AuctionLot[] = [
@@ -38,10 +46,17 @@ const INITIAL_AUCTION_LOTS: AuctionLot[] = [
     currentBid: 16835000,
     bidsCount: 7,
     endsInSeconds: 3570, // 00:59:30
+    status: 'live',
     imageUrl: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80',
     vin: 'JT3AA2E88RB008291',
     location: 'Nairobi Vault (Karen)',
     inspectionScore: 100,
+    reserveStatus: 'met',
+    watchers: 68,
+    estMarketValue: 19500000,
+    bidsLastHour: 4,
+    dutyCleared: true,
+    logbookVerified: true,
   },
   {
     id: 'lot_2',
@@ -55,10 +70,17 @@ const INITIAL_AUCTION_LOTS: AuctionLot[] = [
     currentBid: 12212000,
     bidsCount: 10,
     endsInSeconds: 8370, // 02:19:30
+    status: 'live',
     imageUrl: 'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1200&q=80',
     vin: 'WP0AF2A97PS289102',
     location: 'Nairobi Vault (Westlands)',
     inspectionScore: 99,
+    reserveStatus: 'met',
+    watchers: 42,
+    estMarketValue: 14200000,
+    bidsLastHour: 3,
+    dutyCleared: true,
+    logbookVerified: true,
   },
   {
     id: 'lot_3',
@@ -72,10 +94,17 @@ const INITIAL_AUCTION_LOTS: AuctionLot[] = [
     currentBid: 12048000,
     bidsCount: 13,
     endsInSeconds: 13170, // 03:39:30
+    status: 'live',
     imageUrl: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1200&q=80',
     vin: 'WDD1903791A082914',
     location: 'Mombasa Vault',
     inspectionScore: 98,
+    reserveStatus: 'near',
+    watchers: 51,
+    estMarketValue: 13800000,
+    bidsLastHour: 5,
+    dutyCleared: true,
+    logbookVerified: true,
   },
   {
     id: 'lot_4',
@@ -89,11 +118,140 @@ const INITIAL_AUCTION_LOTS: AuctionLot[] = [
     currentBid: 5696000,
     bidsCount: 16,
     endsInSeconds: 17970, // 04:59:30
+    status: 'live',
     imageUrl: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=1200&q=80',
     vin: '1FTFW1E84MK102941',
     location: 'Nakuru Hub',
     inspectionScore: 100,
+    reserveStatus: 'no_reserve',
+    watchers: 89,
+    estMarketValue: 6500000,
+    bidsLastHour: 8,
+    dutyCleared: true,
+    logbookVerified: true,
   },
+  {
+    id: 'lot_5',
+    vehicleId: 'veh_5',
+    title: 'RANGE ROVER Autobiography P530',
+    brand: 'LAND ROVER',
+    model: 'Range Rover Autobiography',
+    year: 2023,
+    featured: true,
+    startingBid: 24500000,
+    currentBid: 24500000,
+    bidsCount: 0,
+    endsInSeconds: 86400,
+    startsInSeconds: 7200, // Starts in 2 hours
+    status: 'upcoming',
+    imageUrl: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=1200&q=80',
+    vin: 'SALWR2SE4NA109284',
+    location: 'Nairobi Vault (Karen)',
+    inspectionScore: 100,
+    reserveStatus: 'met',
+    watchers: 112,
+    estMarketValue: 28000000,
+    bidsLastHour: 0,
+    dutyCleared: true,
+    logbookVerified: true,
+  },
+  {
+    id: 'lot_6',
+    vehicleId: 'veh_6',
+    title: 'BMW X7 M50i xDrive',
+    brand: 'BMW',
+    model: 'X7 M50i',
+    year: 2021,
+    featured: false,
+    startingBid: 13200000,
+    currentBid: 13200000,
+    bidsCount: 0,
+    endsInSeconds: 100000,
+    startsInSeconds: 21600, // Starts in 6 hours
+    status: 'upcoming',
+    imageUrl: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=80',
+    vin: '5UXCW2C00M9B19284',
+    location: 'Nairobi Vault (Westlands)',
+    inspectionScore: 97,
+    reserveStatus: 'near',
+    watchers: 37,
+    estMarketValue: 15500000,
+    bidsLastHour: 0,
+    dutyCleared: true,
+    logbookVerified: true,
+  },
+  {
+    id: 'lot_7',
+    vehicleId: 'veh_7',
+    title: 'AUDI RS Q8 Quattro',
+    brand: 'AUDI',
+    model: 'RS Q8',
+    year: 2021,
+    featured: false,
+    startingBid: 14000000,
+    currentBid: 15850000,
+    bidsCount: 18,
+    endsInSeconds: 0,
+    status: 'ended',
+    imageUrl: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=1200&q=80',
+    vin: 'WAUZZZF20MD019283',
+    location: 'Mombasa Vault',
+    inspectionScore: 99,
+    reserveStatus: 'met',
+    watchers: 95,
+    estMarketValue: 17200000,
+    bidsLastHour: 0,
+    dutyCleared: true,
+    logbookVerified: true,
+  },
+  {
+    id: 'lot_8',
+    vehicleId: 'veh_8',
+    title: 'LEXUS LX570 Black Edition',
+    brand: 'LEXUS',
+    model: 'LX570',
+    year: 2019,
+    featured: false,
+    startingBid: 12500000,
+    currentBid: 12500000,
+    bidsCount: 0,
+    endsInSeconds: 0,
+    status: 'canceled',
+    imageUrl: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=1200&q=80',
+    vin: 'JTJHY7AX6K4019284',
+    location: 'Nairobi Vault (Karen)',
+    inspectionScore: 95,
+    reserveStatus: 'near',
+    watchers: 19,
+    estMarketValue: 14000000,
+    bidsLastHour: 0,
+    dutyCleared: true,
+    logbookVerified: true,
+  },
+  {
+    id: 'lot_9',
+    vehicleId: 'veh_9',
+    title: 'NISSAN Patrol Nismo V8',
+    brand: 'NISSAN',
+    model: 'Patrol Nismo',
+    year: 2020,
+    featured: false,
+    startingBid: 11000000,
+    currentBid: 11000000,
+    bidsCount: 0,
+    endsInSeconds: 0,
+    status: 'suspended',
+    imageUrl: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?auto=format&fit=crop&w=1200&q=80',
+    vin: 'JN8AY2NC0L0918234',
+    location: 'Nakuru Hub',
+    inspectionScore: 94,
+    reserveStatus: 'near',
+    watchers: 14,
+    estMarketValue: 12800000,
+    bidsLastHour: 0,
+    dutyCleared: true,
+    logbookVerified: true,
+  }
 ];
 
 export const AuctionsPage: React.FC = () => {
@@ -104,33 +262,49 @@ export const AuctionsPage: React.FC = () => {
   const [userDepositTier, setUserDepositTier] = useState<'none' | 'standard' | 'premium'>('none');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('ending_soon');
   
-  // Filtered Auction Lots
-  const filteredLots = lots.filter(lot => {
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      const matchesTitle = lot.title.toLowerCase().includes(q);
-      const matchesBrand = lot.brand.toLowerCase().includes(q);
-      const matchesVin = lot.vin.toLowerCase().includes(q);
-      const matchesLocation = lot.location.toLowerCase().includes(q);
-      if (!matchesTitle && !matchesBrand && !matchesVin && !matchesLocation) return false;
-    }
-    if (filterCategory === 'featured' && !lot.featured) return false;
-    if (filterCategory === 'ending_soon' && lot.endsInSeconds > 7200) return false;
-    return true;
-  });
-  
-  // Modals state
+  // Modals & Notifications state
   const [activeBidLot, setActiveBidLot] = useState<AuctionLot | null>(null);
   const [bidAmountInput, setBidAmountInput] = useState<number>(0);
   const [bidSuccessMessage, setBidSuccessMessage] = useState<string>('');
   const [bidErrorMessage, setBidErrorMessage] = useState<string>('');
+  const [reminderNotice, setReminderNotice] = useState<string | null>(null);
 
   const [depositModalTier, setDepositModalTier] = useState<'standard' | 'premium' | null>(null);
   const [depositPaymentMethod, setDepositPaymentMethod] = useState<'mpesa' | 'rtgs'>('mpesa');
   const [depositPhone, setDepositPhone] = useState<string>('+254 712 345 678');
   const [isProcessingDeposit, setIsProcessingDeposit] = useState<boolean>(false);
   const [depositSuccessMsg, setDepositSuccessMsg] = useState<string>('');
+
+  // Filtered and Sorted Auction Lots
+  const filteredLots = lots
+    .filter(lot => {
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        const matchesTitle = lot.title.toLowerCase().includes(q);
+        const matchesBrand = lot.brand.toLowerCase().includes(q);
+        const matchesModel = lot.model.toLowerCase().includes(q);
+        const matchesVin = lot.vin.toLowerCase().includes(q);
+        const matchesLocation = lot.location.toLowerCase().includes(q);
+        const matchesYear = lot.year.toString().includes(q);
+        if (!matchesTitle && !matchesBrand && !matchesModel && !matchesVin && !matchesLocation && !matchesYear) return false;
+      }
+      if (filterCategory === 'live' && lot.status !== 'live') return false;
+      if (filterCategory === 'upcoming' && lot.status !== 'upcoming') return false;
+      if (filterCategory === 'ended' && lot.status !== 'ended') return false;
+      if (filterCategory === 'canceled' && lot.status !== 'canceled') return false;
+      if (filterCategory === 'suspended' && lot.status !== 'suspended') return false;
+      if (filterCategory === 'featured' && !lot.featured) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'ending_soon') return a.endsInSeconds - b.endsInSeconds;
+      if (sortBy === 'bid_high') return b.currentBid - a.currentBid;
+      if (sortBy === 'bid_low') return a.currentBid - b.currentBid;
+      if (sortBy === 'most_bids') return b.bidsCount - a.bidsCount;
+      return 0;
+    });
 
   // Ticking Countdown Timers Effect
   useEffect(() => {
@@ -211,7 +385,7 @@ export const AuctionsPage: React.FC = () => {
       setIsProcessingDeposit(false);
       if (depositModalTier) {
         setUserDepositTier(depositModalTier);
-        setDepositSuccessMsg(`Security Deposit of KES ${depositModalTier === 'standard' ? '500,000' : '1,000,000'} Locked in Escrow! Bidding privileges unlocked.`);
+        setDepositSuccessMsg(`Security Deposit of KES ${depositModalTier === 'standard' ? '500,000' : '1,000,000'} Verified! Bidding privileges unlocked.`);
         setTimeout(() => {
           setDepositModalTier(null);
           setDepositSuccessMsg('');
@@ -220,10 +394,25 @@ export const AuctionsPage: React.FC = () => {
     }, 1500);
   };
 
+  const TICKER_ITEMS = [
+    "⚡ LIVE BID: KES 16,835,000 placed on Lot #1 Toyota Land Cruiser 300 by Verified Bidder #8821 (Karen Hub)",
+    "🔥 BID MOMENTUM: Lot #4 Ford Ranger Raptor received 8 bids in the past hour • NO RESERVE ACTIVE",
+    "🛡️ ESCROW GUARANTEE: KES 184.2M total volume settled with 98.4% clearance rate & 0% buyer fees",
+    "⭐ HAMMER SETTLED: Audi RS Q8 finalized at KES 15,850,000 (Mombasa Vault)",
+    "🔒 VERIFIED LOTS: All active listings passed KAYAD 150-Point Certified Quality Audit"
+  ];
+
+  const [tickerIndex, setTickerIndex] = useState(0);
+
+  useEffect(() => {
+    const tickerInterval = setInterval(() => {
+      setTickerIndex(prev => (prev + 1) % TICKER_ITEMS.length);
+    }, 4200);
+    return () => clearInterval(tickerInterval);
+  }, []);
+
   return (
-    <div className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8 bg-[#FCF9F4] text-[#1E3063] font-sans">
-      <NavigationBar currentTitle="Live Vehicle Auctions" />
-      
+    <div className="py-6 sm:py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6 bg-[#FCF9F4] text-[#1E3063] font-sans">
       {/* Top Hero / Header */}
       <div className="p-5 sm:p-6 rounded-2xl bg-[#1E3063] text-white border border-white/10 shadow-lg relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-4">
         <div className="absolute top-0 right-0 w-80 h-80 bg-[#00C9CE]/15 rounded-full blur-3xl pointer-events-none" />
@@ -240,7 +429,7 @@ export const AuctionsPage: React.FC = () => {
           </h1>
 
           <p className="text-xs sm:text-sm text-slate-200 font-sans font-medium max-w-xl">
-            Bid on verified luxury vehicles in real time. Pre-inspected & 100% escrow-protected.
+            Bid on verified luxury vehicles in real time. Pre-inspected & 100% verified auction inventory.
           </p>
         </div>
 
@@ -250,7 +439,7 @@ export const AuctionsPage: React.FC = () => {
             <Gavel className="w-4 h-4 text-[#00C9CE] shrink-0" />
             <div>
               <p className="font-mono font-black text-[9px] uppercase text-[#00C9CE] leading-none">Active Lots</p>
-              <p className="text-[11px] font-medium text-slate-200">{lots.length} Live</p>
+              <p className="text-[11px] font-medium text-slate-200">{lots.filter(l => l.status === 'live').length} Live ({lots.length} Total)</p>
             </div>
           </div>
 
@@ -262,113 +451,64 @@ export const AuctionsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="px-3 py-2 rounded-xl bg-white/10 backdrop-blur-md border border-white/15 flex items-center gap-2 text-xs text-white">
-            <ShieldCheck className="w-4 h-4 text-[#00C9CE] shrink-0" />
+          <button
+            onClick={() => setDepositModalTier(userDepositTier === 'none' ? 'standard' : null)}
+            className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/15 flex items-center gap-2 text-xs text-white cursor-pointer transition-all text-left"
+          >
+            <ShieldCheck className={`w-4 h-4 ${userDepositTier !== 'none' ? 'text-[#2ECC71]' : 'text-[#00C9CE]'} shrink-0`} />
             <div>
-              <p className="font-mono font-black text-[9px] uppercase text-[#00C9CE] leading-none">Escrow Vault</p>
-              <p className="text-[11px] font-medium text-slate-200">100% Secured</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Trust Gate · Compact Security Deposit Bar */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-white border border-[#E2D8C7] shadow-xs space-y-3.5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#E8E1D5]">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-[#1E3063] flex items-center justify-center text-[#00C9CE] shrink-0">
-              <Lock className="w-3.5 h-3.5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-serif font-black text-[#1E3063] tracking-tight">
-                  Trust Gate · Security Hold
-                </h2>
-                <span className="text-[10px] font-mono font-bold text-[#6B7A99] uppercase">
-                  (100% Refundable)
-                </span>
-              </div>
-              <p className="text-[11px] text-[#6B7A99] font-medium">
-                Deposit required to eliminate ghost bids & unlock real-time bidding.
+              <p className={`font-mono font-black text-[9px] uppercase ${userDepositTier !== 'none' ? 'text-[#2ECC71]' : 'text-[#00C9CE]'} leading-none`}>
+                {userDepositTier !== 'none' ? 'Deposit Active' : 'Trust Gate'}
+              </p>
+              <p className="text-[11px] font-medium text-slate-200">
+                {userDepositTier === 'none' ? 'Unlock Bidding' : userDepositTier === 'standard' ? 'KES 500k Tier' : 'KES 1M Premium'}
               </p>
             </div>
-          </div>
+          </button>
+        </div>
+      </div>
 
-          {userDepositTier !== 'none' && (
-            <div className="px-3 py-1 rounded-full bg-[#2ECC71]/15 border border-[#2ECC71]/40 text-[#1E3063] text-[11px] font-mono font-bold flex items-center gap-1.5 shrink-0 self-start sm:self-auto">
-              <CheckCircle2 className="w-3.5 h-3.5 text-[#2ECC71]" />
-              <span>
-                {userDepositTier === 'standard' ? 'Standard Tier Active (Up to 5M)' : 'Premium Tier Active (Unlimited)'}
-              </span>
-            </div>
-          )}
+      {/* Live Auction Activity Ticker & Market Summary Strip */}
+      <div className="bg-[#1E3063] text-white rounded-2xl p-3 sm:p-4 border border-[#E2D8C7]/20 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 overflow-hidden">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto overflow-hidden">
+          <span className="flex h-2.5 w-2.5 relative shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2ECC71] opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#2ECC71]"></span>
+          </span>
+          <span className="px-2 py-0.5 rounded bg-[#00C9CE]/20 text-[#00C9CE] text-[10px] font-mono font-black uppercase tracking-wider shrink-0 border border-[#00C9CE]/30">
+            LIVE TICKER
+          </span>
+          <p className="text-xs text-slate-200 font-medium truncate animate-fade-in">
+            {TICKER_ITEMS[tickerIndex]}
+          </p>
         </div>
 
-        {/* Tier Buttons Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* Standard Tier */}
-          <div className="p-3.5 rounded-xl bg-[#F6F1E8] border border-[#E2D8C7] flex items-center justify-between gap-3 hover:border-[#1E3063] transition-all">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-serif font-black text-[#1E3063]">Standard Tier</span>
-                <span className="text-[10px] font-mono font-bold text-[#6B7A99] uppercase">Up to KES 5M</span>
-              </div>
-              <div className="text-sm font-mono font-black text-[#1E3063] mt-0.5">
-                KES 500,000 <span className="text-[10px] text-[#6B7A99] font-normal font-sans">hold</span>
-              </div>
-            </div>
-
-            <Button
-              variant="primary"
-              onClick={() => setDepositModalTier('standard')}
-              className="px-3.5 py-2 bg-[#1E3063] hover:bg-[#0B1628] text-white text-[11px] font-mono font-black uppercase tracking-wider shrink-0"
-              leftIcon={<Lock className="w-3 h-3 text-[#00C9CE]" />}
-            >
-              {userDepositTier === 'standard' || userDepositTier === 'premium' ? 'Unlocked' : 'Deposit 500k'}
-            </Button>
+        <div className="hidden lg:flex items-center gap-4 text-[11px] font-mono shrink-0 text-slate-300 border-l border-white/15 pl-4">
+          <div className="flex items-center gap-1.5">
+            <BarChart2 className="w-3.5 h-3.5 text-[#00C9CE]" />
+            <span>CLEARANCE: <strong className="text-white">98.4%</strong></span>
           </div>
-
-          {/* Premium Tier */}
-          <div className="p-3.5 rounded-xl bg-[#1E3063] text-white border border-[#1E3063] flex items-center justify-between gap-3 shadow-2xs">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs font-serif font-black text-white">Premium Tier</span>
-                <span className="text-[10px] font-mono font-bold text-[#00C9CE] uppercase">Unlimited</span>
-              </div>
-              <div className="text-sm font-mono font-black text-[#00C9CE] mt-0.5">
-                KES 1,000,000 <span className="text-[10px] text-slate-300 font-normal font-sans">hold</span>
-              </div>
-            </div>
-
-            <Button
-              variant="primary"
-              onClick={() => setDepositModalTier('premium')}
-              className="px-3.5 py-2 bg-[#00C9CE] hover:bg-[#00b8bc] text-[#1E3063] text-[11px] font-mono font-black uppercase tracking-wider shrink-0"
-              leftIcon={<Lock className="w-3 h-3 text-[#1E3063]" />}
-            >
-              {userDepositTier === 'premium' ? 'Unlocked' : 'Deposit 1M'}
-            </Button>
+          <div className="flex items-center gap-1.5">
+            <TrendingUp className="w-3.5 h-3.5 text-[#2ECC71]" />
+            <span>SETTLED: <strong className="text-white">KES 184M+</strong></span>
           </div>
         </div>
       </div>
+
+      {reminderNotice && (
+        <div className="p-3.5 rounded-2xl bg-[#00C9CE]/15 border border-[#00C9CE]/40 text-[#1E3063] text-xs font-bold flex items-center justify-between gap-2 animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-[#00C9CE] shrink-0" />
+            <span>{reminderNotice}</span>
+          </div>
+          <button onClick={() => setReminderNotice(null)} className="p-1 hover:bg-[#00C9CE]/20 rounded-lg">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Live Active Lots Directory */}
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 border-b border-[#E8E1D5] gap-3">
-          <div>
-            <h2 className="text-2xl font-black text-[#1E3063] font-serif tracking-tight">
-              Live Auction Lots
-            </h2>
-            <p className="text-xs text-[#6B7A99] font-medium">
-              Verified luxury vehicles currently under the hammer. Bids updated live.
-            </p>
-          </div>
-          <span className="px-3 py-1 rounded-full bg-[#2ECC71]/15 text-[#1E3063] text-xs font-bold uppercase tracking-wider border border-[#2ECC71]/30 flex items-center gap-1.5 self-start sm:self-auto">
-            <span className="w-2 h-2 rounded-full bg-[#2ECC71] animate-ping" />
-            Live Auction Engine Active
-          </span>
-        </div>
-
         {/* Standardized KAYAD Search Bar */}
         <SearchBar
           value={searchQuery}
@@ -377,106 +517,288 @@ export const AuctionsPage: React.FC = () => {
           resultCount={filteredLots.length}
           badgeLabel="LIVE AUCTION DIRECTORY"
           filterOptions={[
-            { id: 'all', label: 'All Lots' },
+            { id: 'all', label: 'All Auctions' },
+            { id: 'live', label: 'Live Bidding' },
+            { id: 'upcoming', label: 'Coming Up' },
+            { id: 'ended', label: 'Ended / Closed' },
+            { id: 'canceled', label: 'Canceled' },
+            { id: 'suspended', label: 'Suspended' },
             { id: 'featured', label: 'Featured Only' },
-            { id: 'ending_soon', label: 'Ending Soon' },
           ]}
           activeFilter={filterCategory}
           onFilterChange={setFilterCategory}
+          sortOptions={[
+            { id: 'ending_soon', label: 'Ends Soonest' },
+            { id: 'bid_high', label: 'Highest Bid' },
+            { id: 'bid_low', label: 'Lowest Bid' },
+            { id: 'most_bids', label: 'Most Active' },
+          ]}
+          activeSort={sortBy}
+          onSortChange={setSortBy}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-          {filteredLots.map(lot => {
-            const timer = formatTimer(lot.endsInSeconds);
-            return (
-              <div
-                key={lot.id}
-                className="p-5 sm:p-6 rounded-3xl bg-white border border-[#E2D8C7] shadow-sm hover:shadow-md transition-all space-y-5 flex flex-col justify-between"
-              >
-                <div className="space-y-4">
-                  {/* Top Image Box */}
-                  <div className="relative h-60 rounded-2xl overflow-hidden border border-[#E2D8C7] group">
-                    <img
-                      src={lot.imageUrl}
-                      alt={lot.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+        {filteredLots.length === 0 ? (
+          <div className="p-10 sm:p-14 text-center bg-white border border-[#E2D8C7] rounded-3xl space-y-4 shadow-sm">
+            <div className="w-14 h-14 rounded-2xl bg-[#F6F1E8] border border-[#E2D8C7] flex items-center justify-center mx-auto text-[#00C9CE]">
+              <Gavel className="w-7 h-7" />
+            </div>
+            <h3 className="text-lg font-extrabold text-[#1E3063] font-serif">
+              No Auction Lots Match Your Search
+            </h3>
+            <p className="text-xs text-[#6B7A99] font-medium max-w-md mx-auto leading-relaxed">
+              We couldn't find any listings matching "{searchQuery}". Try searching for popular models like "Land Cruiser", "Porsche", "Mombasa", or reset your category filter.
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSearchQuery('');
+                setFilterCategory('all');
+              }}
+              className="border-[#E2D8C7] text-[#1E3063] font-bold text-xs hover:bg-[#F6F1E8]"
+            >
+              Reset Search & Filters
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+            {filteredLots.map(lot => {
+              const timer = formatTimer(lot.endsInSeconds);
+              const startTimer = lot.startsInSeconds ? formatTimer(lot.startsInSeconds) : null;
+              const status = lot.status || 'live';
+              const isClosingSoon = status === 'live' && lot.endsInSeconds > 0 && lot.endsInSeconds <= 3600;
 
-                    {/* Top Badges */}
-                    <div className="absolute top-3 left-3 flex items-center gap-2">
-                      {lot.featured && (
-                        <span className="px-3 py-1 rounded-full bg-[#1E3063] text-[#00C9CE] text-[10px] font-black uppercase tracking-wider shadow-md">
-                          FEATURED LOT
-                        </span>
-                      )}
-                      <span className="px-3 py-1 rounded-full bg-[#2ECC71] text-[#1E3063] text-[10px] font-black uppercase tracking-wider shadow-md flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#1E3063] animate-pulse" />
-                        AUCTION
-                      </span>
+              // Calculate bid increase %
+              const bidIncrease = lot.currentBid > lot.startingBid
+                ? Math.round(((lot.currentBid - lot.startingBid) / lot.startingBid) * 100)
+                : 0;
+
+              return (
+                <div
+                  key={lot.id}
+                  className={`p-5 sm:p-6 rounded-3xl bg-white border shadow-sm hover:shadow-md transition-all space-y-5 flex flex-col justify-between ${
+                    isClosingSoon ? 'border-amber-400 ring-2 ring-amber-400/20' : 'border-[#E2D8C7]'
+                  }`}
+                >
+                  <div className="space-y-4">
+                    {/* Top Image Box */}
+                    <div 
+                      onClick={() => navigateTo('vehicle_detail', lot.vehicleId)}
+                      className="relative h-60 rounded-2xl overflow-hidden border border-[#E2D8C7] group cursor-pointer"
+                    >
+                      <img
+                        src={lot.imageUrl}
+                        alt={lot.title}
+                        className={`w-full h-full object-cover transition-transform duration-500 ${status === 'ended' || status === 'canceled' || status === 'suspended' ? 'grayscale brightness-90' : 'group-hover:scale-105'}`}
+                      />
+
+                      {/* Top Badges */}
+                      <div className="absolute top-3 left-3 flex flex-wrap items-center gap-2 max-w-[80%]">
+                        {lot.featured && (
+                          <span className="px-3 py-1 rounded-full bg-[#1E3063] text-[#00C9CE] text-[10px] font-black uppercase tracking-wider shadow-md">
+                            FEATURED LOT
+                          </span>
+                        )}
+                        
+                        {status === 'live' && (
+                          <span className="px-3 py-1 rounded-full bg-[#2ECC71] text-[#1E3063] text-[10px] font-black uppercase tracking-wider shadow-md flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#1E3063] animate-pulse" />
+                            LIVE AUCTION
+                          </span>
+                        )}
+
+                        {/* Reserve Status Badge */}
+                        {lot.reserveStatus === 'met' && (
+                          <span className="px-2.5 py-1 rounded-full bg-[#2ECC71] text-[#1E3063] text-[10px] font-black uppercase tracking-wider shadow-md flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-[#1E3063]" />
+                            RESERVE MET
+                          </span>
+                        )}
+
+                        {lot.reserveStatus === 'near' && status === 'live' && (
+                          <span className="px-2.5 py-1 rounded-full bg-amber-500 text-[#1E3063] text-[10px] font-black uppercase tracking-wider shadow-md flex items-center gap-1">
+                            <Flame className="w-3 h-3 text-[#1E3063]" />
+                            RESERVE NEAR
+                          </span>
+                        )}
+
+                        {lot.reserveStatus === 'no_reserve' && status === 'live' && (
+                          <span className="px-2.5 py-1 rounded-full bg-[#00C9CE] text-[#1E3063] text-[10px] font-black uppercase tracking-wider shadow-md flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-[#1E3063]" />
+                            NO RESERVE
+                          </span>
+                        )}
+
+                        {status === 'upcoming' && (
+                          <span className="px-3 py-1 rounded-full bg-[#00C9CE] text-[#1E3063] text-[10px] font-black uppercase tracking-wider shadow-md flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-[#1E3063]" />
+                            COMING UP
+                          </span>
+                        )}
+
+                        {status === 'ended' && (
+                          <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-200 text-[10px] font-black uppercase tracking-wider shadow-md">
+                            ENDED / CLOSED
+                          </span>
+                        )}
+
+                        {status === 'canceled' && (
+                          <span className="px-3 py-1 rounded-full bg-rose-600 text-white text-[10px] font-black uppercase tracking-wider shadow-md">
+                            CANCELED
+                          </span>
+                        )}
+
+                        {status === 'suspended' && (
+                          <span className="px-3 py-1 rounded-full bg-amber-600 text-white text-[10px] font-black uppercase tracking-wider shadow-md">
+                            SUSPENDED
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Countdown Overlay Box */}
+                      <div className={`absolute bottom-3 right-3 px-3 py-1.5 rounded-xl border backdrop-blur-md text-xs font-mono font-bold flex items-center gap-1.5 shadow-lg ${
+                        isClosingSoon ? 'bg-rose-700/95 text-white border-rose-400 animate-pulse' : 'bg-[#1E3063]/90 text-white border-white/20'
+                      }`}>
+                        <Clock className="w-3.5 h-3.5 text-[#00C9CE]" />
+                        {status === 'live' && (
+                          <>
+                            <span>{isClosingSoon ? 'CLOSING IN' : 'Ends in'}</span>
+                            <span className="text-[#00C9CE] font-black tabular-nums">
+                              {timer.hh} : {timer.mm} : {timer.ss}
+                            </span>
+                          </>
+                        )}
+                        {status === 'upcoming' && startTimer && (
+                          <>
+                            <span>Starts in</span>
+                            <span className="text-[#00C9CE] font-black tabular-nums">
+                              {startTimer.hh} : {startTimer.mm} : {startTimer.ss}
+                            </span>
+                          </>
+                        )}
+                        {status === 'ended' && <span className="text-slate-300 font-black">Auction Closed</span>}
+                        {status === 'canceled' && <span className="text-rose-300 font-black">Lot Withdrawn</span>}
+                        {status === 'suspended' && <span className="text-amber-300 font-black">Audit Pending</span>}
+                      </div>
                     </div>
 
-                    {/* Countdown Overlay Box */}
-                    <div className="absolute bottom-3 right-3 px-3 py-1.5 rounded-xl bg-[#1E3063]/90 text-white border border-white/20 backdrop-blur-md text-xs font-mono font-bold flex items-center gap-1.5 shadow-lg">
-                      <Clock className="w-3.5 h-3.5 text-[#00C9CE]" />
-                      <span>Ends in</span>
-                      <span className="text-[#00C9CE] font-black">
-                        {timer.hh} : {timer.mm} : {timer.ss}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Brand & Title Info */}
-                  <div>
-                    <span className="text-[11px] font-black uppercase tracking-widest text-[#00C9CE] block">
-                      {lot.brand}
-                    </span>
-                    <h3 className="text-xl font-extrabold text-[#1E3063] font-serif">
-                      {lot.title} {lot.year}
-                    </h3>
-                    <p className="text-xs text-[#6B7A99] font-medium mt-0.5">
-                      VIN: {lot.vin} · {lot.location}
-                    </p>
-                  </div>
-
-                  {/* Pricing Comparison Bar */}
-                  <div className="p-4 rounded-2xl bg-[#F6F1E8] border border-[#E2D8C7] grid grid-cols-2 gap-4">
+                    {/* Brand & Title Info */}
                     <div>
-                      <span className="text-[10px] font-bold text-[#6B7A99] uppercase tracking-wider block">
-                        Starting Bid
-                      </span>
-                      <span className="text-sm font-extrabold text-[#1E3063] font-serif">
-                        KES {lot.startingBid.toLocaleString()}
-                      </span>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-black uppercase tracking-widest text-[#00C9CE] block">
+                          {lot.brand}
+                        </span>
+                        {lot.estMarketValue && (
+                          <span className="text-[10px] font-bold text-[#6B7A99] bg-[#F6F1E8] px-2 py-0.5 rounded border border-[#E2D8C7]">
+                            Est. Retail: KES {(lot.estMarketValue / 1000000).toFixed(1)}M
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 
+                        onClick={() => navigateTo('vehicle_detail', lot.vehicleId)}
+                        className="text-xl font-extrabold text-[#1E3063] font-serif hover:text-[#00C9CE] cursor-pointer transition-colors"
+                      >
+                        {lot.title} {lot.year}
+                      </h3>
+                      
+                      <p className="text-xs text-[#6B7A99] font-medium mt-0.5">
+                        VIN: {lot.vin} · {lot.location}
+                      </p>
+
+                      {/* Watcher & Bid Momentum Pills */}
+                      <div className="flex flex-wrap items-center gap-2 pt-2 text-[11px] font-semibold text-[#6B7A99]">
+                        <span className="inline-flex items-center gap-1 bg-[#F6F1E8] px-2.5 py-1 rounded-lg border border-[#E2D8C7] text-[#1E3063] text-[10px] font-bold">
+                          <Eye className="w-3 h-3 text-[#00C9CE]" />
+                          {lot.watchers || 28} Watching
+                        </span>
+
+                        {lot.bidsLastHour && lot.bidsLastHour > 0 && status === 'live' ? (
+                          <span className="inline-flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200 text-amber-900 text-[10px] font-bold">
+                            <Flame className="w-3 h-3 text-amber-500" />
+                            {lot.bidsLastHour} bids past hr
+                          </span>
+                        ) : null}
+
+                        <span className="inline-flex items-center gap-1 text-[10px] text-[#1E3063] font-bold bg-[#2ECC71]/10 px-2.5 py-1 rounded-lg border border-[#2ECC71]/30">
+                          <ShieldCheck className="w-3.5 h-3.5 text-[#2ECC71]" />
+                          Audit {lot.inspectionScore}/100
+                        </span>
+                      </div>
                     </div>
 
-                    <div className="border-l border-[#E2D8C7] pl-4">
-                      <span className="text-[10px] font-bold text-[#00C9CE] uppercase tracking-wider block">
-                        Current High Bid
-                      </span>
-                      <span className="text-lg font-black text-[#1E3063] font-serif block">
-                        KES {lot.currentBid.toLocaleString()}
-                      </span>
-                      <span className="text-[10px] text-[#2ECC71] font-extrabold">
-                        {lot.bidsCount} bids placed · Live
-                      </span>
+                    {/* Pricing Comparison Bar */}
+                    <div className="p-4 rounded-2xl bg-[#F6F1E8] border border-[#E2D8C7] grid grid-cols-2 gap-4">
+                      <div>
+                        <span className="text-[10px] font-bold text-[#6B7A99] uppercase tracking-wider block">
+                          Starting Bid
+                        </span>
+                        <span className="text-sm font-extrabold text-[#1E3063] font-serif">
+                          KES {lot.startingBid.toLocaleString()}
+                        </span>
+                        {bidIncrease > 0 && (
+                          <span className="text-[10px] font-bold text-[#2ECC71] block mt-0.5">
+                            +{bidIncrease}% growth
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="border-l border-[#E2D8C7] pl-4">
+                        <span className="text-[10px] font-bold text-[#00C9CE] uppercase tracking-wider block">
+                          {status === 'ended' ? 'Winning Hammer Bid' : 'Current High Bid'}
+                        </span>
+                        <span className="text-lg font-black text-[#1E3063] font-serif block">
+                          KES {lot.currentBid.toLocaleString()}
+                        </span>
+                        <span className="text-[10px] font-extrabold text-[#6B7A99]">
+                          {status === 'live' && <span className="text-[#2ECC71]">{lot.bidsCount} bids placed · Live</span>}
+                          {status === 'upcoming' && <span>0 bids · Pre-bidding Opens Soon</span>}
+                          {status === 'ended' && <span>{lot.bidsCount} total bids · Finalized</span>}
+                          {status === 'canceled' && <span className="text-rose-600">Auction Canceled</span>}
+                          {status === 'suspended' && <span className="text-amber-600">Listing Suspended</span>}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
                 {/* Bottom Action Button */}
                 <div className="pt-2 flex items-center gap-3">
-                  <Button
-                    variant="primary"
-                    onClick={() => handleOpenBidModal(lot)}
-                    className="flex-1 bg-[#1E3063] hover:bg-[#0B1628] text-white font-extrabold text-xs py-3 uppercase tracking-wider shadow-sm"
-                    leftIcon={<Gavel className="w-4 h-4 text-[#00C9CE]" />}
-                  >
-                    Place Bid
-                  </Button>
+                  {status === 'live' && (
+                    <Button
+                      variant="primary"
+                      onClick={() => handleOpenBidModal(lot)}
+                      className="flex-1 bg-[#1E3063] hover:bg-[#0B1628] text-white font-extrabold text-xs py-3 uppercase tracking-wider shadow-sm"
+                      leftIcon={<Gavel className="w-4 h-4 text-[#00C9CE]" />}
+                    >
+                      Place Bid
+                    </Button>
+                  )}
+
+                  {status === 'upcoming' && (
+                    <Button
+                      variant="primary"
+                      onClick={() => {
+                        setReminderNotice(`Opening reminder activated for ${lot.title}! You will be notified 15 minutes before live bidding starts.`);
+                        setTimeout(() => setReminderNotice(null), 4500);
+                      }}
+                      className="flex-1 bg-[#00C9CE] hover:bg-[#00b8bc] text-[#1E3063] font-extrabold text-xs py-3 uppercase tracking-wider shadow-sm"
+                      leftIcon={<Clock className="w-4 h-4 text-[#1E3063]" />}
+                    >
+                      Set Opening Reminder
+                    </Button>
+                  )}
+
+                  {(status === 'ended' || status === 'canceled' || status === 'suspended') && (
+                    <button
+                      disabled
+                      className="flex-1 py-3 px-4 bg-slate-100 border border-slate-200 text-slate-400 font-bold text-xs uppercase tracking-wider rounded-xl cursor-not-allowed"
+                    >
+                      {status === 'ended' ? 'Auction Closed' : status === 'canceled' ? 'Lot Canceled' : 'Auction Suspended'}
+                    </button>
+                  )}
 
                   <Button
                     variant="outline"
-                    onClick={() => navigateTo('gallery')}
+                    onClick={() => navigateTo('vehicle_detail', lot.vehicleId)}
                     className="px-4 py-3 border-[#E2D8C7] text-[#1E3063] font-bold text-xs hover:bg-[#F6F1E8]"
                   >
                     View Lot
@@ -486,6 +808,7 @@ export const AuctionsPage: React.FC = () => {
             );
           })}
         </div>
+      )}
       </div>
 
       {/* Auction Rules & Guidelines */}
@@ -512,7 +835,7 @@ export const AuctionsPage: React.FC = () => {
           </li>
           <li className="flex items-start gap-2.5 p-3 rounded-xl bg-[#F6F1E8]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#00C9CE] mt-1.5 shrink-0" />
-            <span>Escrow holds your funds securely until vehicle transfer</span>
+            <span>Guaranteed verified title transfer upon winning auction</span>
           </li>
           <li className="flex items-start gap-2.5 p-3 rounded-xl bg-[#F6F1E8]">
             <span className="w-1.5 h-1.5 rounded-full bg-[#00C9CE] mt-1.5 shrink-0" />
@@ -547,6 +870,29 @@ export const AuctionsPage: React.FC = () => {
                 Current High Bid: <strong className="text-[#1E3063]">KES {activeBidLot.currentBid.toLocaleString()}</strong>
               </p>
             </div>
+
+            {userDepositTier === 'none' && (
+              <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold flex items-center gap-1.5 text-[#1E3063]">
+                    <Lock className="w-4 h-4 text-amber-600" />
+                    Bidding Security Deposit Required
+                  </span>
+                  <span className="text-[10px] bg-amber-200 text-amber-900 font-extrabold px-2 py-0.5 rounded uppercase">100% Refundable</span>
+                </div>
+                <p className="text-[11px] text-[#3D4F6F] leading-snug">
+                  An escrow security deposit hold is required to place legally binding bids in KAYAD Vault auctions.
+                </p>
+                <Button
+                  type="button"
+                  onClick={() => setDepositModalTier('standard')}
+                  className="w-full bg-[#1E3063] hover:bg-[#0B1628] text-white font-extrabold text-xs py-2.5 uppercase tracking-wider"
+                  leftIcon={<ShieldCheck className="w-4 h-4 text-[#00C9CE]" />}
+                >
+                  Unlock Security Deposit (KES 500,000 Hold)
+                </Button>
+              </div>
+            )}
 
             {bidSuccessMessage && (
               <div className="p-3 rounded-xl bg-[#2ECC71]/15 text-[#1E3063] border border-[#2ECC71]/40 text-xs font-bold flex items-center gap-2">
@@ -603,10 +949,10 @@ export const AuctionsPage: React.FC = () => {
 
               <div className="p-3 rounded-xl bg-[#FCF9F4] border border-[#E2D8C7] text-[11px] text-slate-600 space-y-1">
                 <p className="font-bold text-[#1E3063]">
-                  Escrow Guarantee:
+                  Bidder Guarantee:
                 </p>
                 <p>
-                  If you win this lot, your funds will be transferred safely through KAYAD M-Pesa/Bank Escrow vault upon inspection.
+                  If you win this lot, payment settlement will be completed upon winning confirmation and vehicle handover.
                 </p>
               </div>
 
@@ -641,7 +987,7 @@ export const AuctionsPage: React.FC = () => {
                 {depositModalTier === 'standard' ? 'Standard Tier (KES 500,000)' : 'Premium Tier (KES 1,000,000)'}
               </h3>
               <p className="text-xs text-[#6B7A99] font-medium">
-                100% Refundable Security Deposit held safely in KAYAD Escrow bank account.
+                100% Refundable Security Deposit held safely in KAYAD bank account.
               </p>
             </div>
 
@@ -704,7 +1050,7 @@ export const AuctionsPage: React.FC = () => {
                   variant="primary"
                   className="w-full bg-[#1E3063] hover:bg-[#0B1628] text-white font-extrabold text-xs py-3.5 uppercase tracking-wider"
                 >
-                  {isProcessingDeposit ? 'Processing Escrow Hold...' : `Confirm Deposit of KES ${depositModalTier === 'standard' ? '500,000' : '1,000,000'}`}
+                  {isProcessingDeposit ? 'Processing Deposit Hold...' : `Confirm Deposit of KES ${depositModalTier === 'standard' ? '500,000' : '1,000,000'}`}
                 </Button>
               </form>
             )}

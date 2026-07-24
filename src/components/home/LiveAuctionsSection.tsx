@@ -106,7 +106,7 @@ export const LiveAuctionsSection: React.FC = () => {
                   </div>
 
                   <h3 className="text-lg font-black text-[#1E3063] font-serif group-hover:text-[#121D33] transition-colors line-clamp-1">
-                    {vehicle.year} {vehicle.title}
+                    {vehicle.title.startsWith(String(vehicle.year)) ? vehicle.title : `${vehicle.year} ${vehicle.title}`}
                   </h3>
 
                   <div className="text-[11px] text-[#6B7A99] font-mono truncate">

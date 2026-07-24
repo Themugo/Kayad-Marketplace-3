@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useMemo } from 'react';
-import { Vehicle, FilterState, EscrowContract, Bid, NotificationItem, Advert } from '../types';
+import { Vehicle, FilterState, EscrowContract, Bid, NotificationItem, Advert, PriceAlert } from '../types';
 import { mockVehicles, mockEscrowContracts, mockBids, mockNotifications } from '../data/mockData';
 
 export const initialAdverts: Advert[] = [
@@ -84,6 +84,12 @@ interface MarketplaceContextType {
   addAdvert: (advData: Omit<Advert, 'id' | 'clicksCount' | 'createdAt'>) => Advert;
   toggleAdvertStatus: (id: string) => void;
   deleteAdvert: (id: string) => void;
+  priceAlerts: PriceAlert[];
+  setPriceAlert: (alertData: Omit<PriceAlert, 'id' | 'createdAt' | 'isActive'>) => PriceAlert;
+  removePriceAlert: (vehicleId: string) => void;
+  getPriceAlertForVehicle: (vehicleId: string) => PriceAlert | undefined;
+  simulatePriceChange: (vehicleId: string, newPrice: number) => void;
+  simulateStatusChange: (vehicleId: string, newStatus: Vehicle['status']) => void;
 }
 
 const initialFilters: FilterState = {
@@ -382,6 +388,119 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setAdverts(prev => prev.filter(a => a.id !== id));
   };
 
+  const [priceAlerts, setPriceAlerts] = useState<PriceAlert[]>([
+    {
+      id: 'alert_1',
+      userId: 'user_1',
+      vehicleId: 'veh_c200',
+      vehicleTitle: '2009 Mercedes-Benz C200 Kompressor',
+      targetPrice: 1300000,
+      alertOnPriceDrop: true,
+      alertOnStatusChange: true,
+      currentPriceAtSet: 1400000,
+      notifyMethod: 'both',
+      createdAt: new Date().toISOString(),
+      isActive: true
+    }
+  ]);
+
+  const setPriceAlert = (alertData: Omit<PriceAlert, 'id' | 'createdAt' | 'isActive'>): PriceAlert => {
+    const existingIndex = priceAlerts.findIndex(a => a.vehicleId === alertData.vehicleId && a.userId === alertData.userId);
+    const newAlert: PriceAlert = {
+      ...alertData,
+      id: existingIndex >= 0 ? priceAlerts[existingIndex].id : `alert_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      isActive: true
+    };
+
+    if (existingIndex >= 0) {
+      setPriceAlerts(prev => prev.map((item, idx) => idx === existingIndex ? newAlert : item));
+    } else {
+      setPriceAlerts(prev => [newAlert, ...prev]);
+    }
+
+    // Post a notification confirming alert activation
+    const notif: NotificationItem = {
+      id: `notif_${Date.now()}`,
+      userId: alertData.userId,
+      title: 'Price Alert Set',
+      message: `Alert configured for ${alertData.vehicleTitle}. We will notify you if price drops below KSh ${alertData.targetPrice.toLocaleString()}.`,
+      type: 'price_alert',
+      isRead: false,
+      createdAt: 'Just now',
+      vehicleId: alertData.vehicleId
+    };
+    setNotifications(prev => [notif, ...prev]);
+
+    return newAlert;
+  };
+
+  const removePriceAlert = (vehicleId: string) => {
+    setPriceAlerts(prev => prev.filter(a => a.vehicleId !== vehicleId));
+  };
+
+  const getPriceAlertForVehicle = (vehicleId: string): PriceAlert | undefined => {
+    return priceAlerts.find(a => a.vehicleId === vehicleId && a.isActive);
+  };
+
+  const simulatePriceChange = (vehicleId: string, newPrice: number) => {
+    const target = vehicles.find(v => v.id === vehicleId);
+    if (!target) return;
+
+    const oldPrice = target.price;
+
+    // Update vehicle price
+    setVehicles(prev => prev.map(v => v.id === vehicleId ? { ...v, price: newPrice, buyNowPrice: newPrice } : v));
+
+    // Find alert
+    const alert = priceAlerts.find(a => a.vehicleId === vehicleId && a.isActive);
+
+    const priceDropped = newPrice < oldPrice;
+    const dropAmount = oldPrice - newPrice;
+
+    if (priceDropped) {
+      const notif: NotificationItem = {
+        id: `notif_${Date.now()}`,
+        userId: alert ? alert.userId : 'user_1',
+        title: `🚨 Price Drop: ${target.title}`,
+        message: `Price dropped by KSh ${dropAmount.toLocaleString()}! New price: KSh ${newPrice.toLocaleString()}${alert ? ` (Below your KSh ${alert.targetPrice.toLocaleString()} alert threshold)` : ''}.`,
+        type: 'price_drop',
+        isRead: false,
+        createdAt: 'Just now',
+        vehicleId: vehicleId
+      };
+      setNotifications(prev => [notif, ...prev]);
+    }
+  };
+
+  const simulateStatusChange = (vehicleId: string, newStatus: Vehicle['status']) => {
+    const target = vehicles.find(v => v.id === vehicleId);
+    if (!target) return;
+
+    setVehicles(prev => prev.map(v => v.id === vehicleId ? { ...v, status: newStatus } : v));
+
+    const alert = priceAlerts.find(a => a.vehicleId === vehicleId && a.isActive);
+
+    const statusLabels: Record<Vehicle['status'], string> = {
+      active: 'Available for Purchase',
+      pending: 'Under Escrow Lock / Deal Pending',
+      sold: 'Marked as Sold',
+      draft: 'In Draft Review'
+    };
+
+    const notif: NotificationItem = {
+      id: `notif_${Date.now()}`,
+      userId: alert ? alert.userId : 'user_1',
+      title: `⚡ Vehicle Status Update: ${target.title}`,
+      message: `Status updated to "${statusLabels[newStatus] || newStatus}".`,
+      type: 'status_change',
+      isRead: false,
+      createdAt: 'Just now',
+      vehicleId: vehicleId
+    };
+    setNotifications(prev => [notif, ...prev]);
+  };
+
   return (
     <MarketplaceContext.Provider
       value={{
@@ -419,7 +538,13 @@ export const MarketplaceProvider: React.FC<{ children: React.ReactNode }> = ({ c
         adverts,
         addAdvert,
         toggleAdvertStatus,
-        deleteAdvert
+        deleteAdvert,
+        priceAlerts,
+        setPriceAlert,
+        removePriceAlert,
+        getPriceAlertForVehicle,
+        simulatePriceChange,
+        simulateStatusChange
       }}
     >
       {children}
